@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · Brukertest Analyse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#0d1b2a; --blue:#1b4f8a; --accent:#2e86c1;
+    --ice:#eaf4fb; --green:#1e8449; --orange:#d35400;
+    --white:#fff; --muted:#6b7280; --border:#e2e8f0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',sans-serif; background:#f0f4f8; color:var(--navy); }
+  .topbar { background:var(--navy); color:white; padding:16px 32px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar h1 { font-family:'DM Serif Display',serif; font-size:1.2rem; }
+  .topbar span { font-size:0.8rem; color:#8ab4d4; }
+  .container { max-width:1100px; margin:0 auto; padding:40px 20px; }
+
+  /* LOGIN */
+  .login-box { max-width:380px; margin:100px auto; background:white; border-radius:16px; padding:40px; border:1px solid var(--border); box-shadow:0 4px 20px rgba(0,0,0,0.06); text-align:center; }
+  .login-box h2 { font-family:'DM Serif Display',serif; font-size:1.6rem; margin-bottom:8px; }
+  .login-box p { color:var(--muted); font-size:0.9rem; margin-bottom:24px; }
+  .login-box input { width:100%; border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-family:'DM Sans',sans-serif; font-size:0.95rem; margin-bottom:14px; }
+  .btn { padding:12px 28px; border-radius:10px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; font-size:0.95rem; transition:all 0.2s; }
+  .btn-primary { background:var(--accent); color:white; width:100%; }
+  .btn-primary:hover { background:var(--blue); }
+
+  /* STATS */
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+  .stat-card { background:white; border-radius:14px; padding:24px; border:1px solid var(--border); text-align:center; }
+  .stat-num { font-family:'DM Serif Display',serif; font-size:2.4rem; color:var(--accent); }
+  .stat-label { font-size:0.8rem; color:var(--muted); margin-top:4px; }
+
+  /* SECTION */
+  .section { background:white; border-radius:16px; padding:28px; margin-bottom:24px; border:1px solid var(--border); }
+  .section-title { font-family:'DM Serif Display',serif; font-size:1.4rem; margin-bottom:20px; color:var(--navy); }
+
+  /* BAR CHART */
+  .bar-wrap { margin-bottom:16px; }
+  .bar-label { font-size:0.85rem; color:var(--navy); margin-bottom:5px; display:flex; justify-content:space-between; }
+  .bar-track { background:#f0f4f8; border-radius:99px; height:12px; overflow:hidden; }
+  .bar-fill { height:12px; border-radius:99px; background:var(--accent); transition:width 0.6s ease; }
+
+  /* ROUTE GRID */
+  .route-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+  .route-card { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .route-card img { width:100%; display:block; }
+  .route-meta { padding:12px 14px; font-size:0.82rem; color:var(--muted); background:#fafafa; }
+  .route-meta strong { color:var(--navy); }
+  .changed-badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.75rem; font-weight:600; margin-left:6px; }
+  .badge-ja { background:#d5f5e3; color:#1e8449; }
+  .badge-delvis { background:#fef9c3; color:#b45309; }
+  .badge-nei { background:#fee2e2; color:#b91c1c; }
+
+  /* RESPONSES TABLE */
+  .resp-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+  .resp-table th { background:#f8fafc; padding:10px 12px; text-align:left; font-weight:600; border-bottom:2px solid var(--border); }
+  .resp-table td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .resp-table tr:hover { background:#f8fafc; }
+
+  .quote { background:var(--ice); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; margin-bottom:10px; font-size:0.88rem; line-height:1.6; color:var(--navy); }
+  .quote .qmeta { font-size:0.75rem; color:var(--muted); margin-top:4px; }
+
+  .export-btn { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; border-radius:10px; border:1px solid var(--border); background:white; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500; margin-right:10px; transition:all 0.2s; }
+  .export-btn:hover { background:var(--ice); border-color:var(--accent); }
+
+  .likert-row { display:flex; gap:4px; align-items:center; margin-bottom:8px; }
+  .likert-label { width:280px; font-size:0.83rem; color:var(--navy); flex-shrink:0; }
+  .likert-bars { display:flex; gap:3px; flex:1; }
+  .likert-bar { flex:1; background:#f0f4f8; border-radius:4px; height:28px; position:relative; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:600; color:var(--muted); }
+  .likert-bar .fill { position:absolute; bottom:0; left:0; right:0; border-radius:4px; background:var(--accent); opacity:0.7; }
+  .likert-avg { width:48px; text-align:right; font-size:0.82rem; color:var(--accent); font-weight:600; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Brukertest Analyse · NTNU 2026</h1>
+  <span id="last-updated"></span>
+</div>
+
+<div class="container" id="main" style="display:none">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:1.8rem;">Oversikt</h2>
+      <p style="color:var(--muted);font-size:0.9rem;">Odin Bård Østvedt · Masteroppgave NTNU 2026</p>
+    </div>
+    <div>
+      <button class="export-btn" onclick="exportCSV()">📥 Eksporter CSV</button>
+      <button class="export-btn" onclick="location.reload()">🔄 Oppdater</button>
+    </div>
+  </div>
+
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <!-- LIKERT -->
+  <div class="section">
+    <div class="section-title">Surveyresultater — gjennomsnitt</div>
+    <div id="likert-section"></div>
+  </div>
+
+  <!-- RUTE ENDRING -->
+  <div class="section">
+    <div class="section-title">Ruteendringer</div>
+    <div id="change-summary" style="margin-bottom:20px;"></div>
+    <div class="route-grid" id="route-grid"></div>
+  </div>
+
+  <!-- ÅPNE SVAR -->
+  <div class="section">
+    <div class="section-title">Åpne svar</div>
+    <div id="open-answers"></div>
+  </div>
+
+  <!-- BEGRUNNELSER -->
+  <div class="section">
+    <div class="section-title">Begrunnelser — rute før/etter</div>
+    <div id="reasons-table"></div>
+  </div>
+
+</div>
+
+<!-- LOGIN -->
+<div id="login-wrap">
+  <div class="login-box">
+    <h2>Admin-tilgang</h2>
+    <p>Skriv inn passordet for å se analysen</p>
+    <input type="password" id="pw-input" placeholder="Passord" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" onclick="doLogin()">Logg inn</button>
+    <p id="login-err" style="color:#e74c3c;font-size:0.82rem;margin-top:10px;"></p>
+  </div>
+</div>
+
+<script>
+let pw = '';
+let allData = [];
+
+async function doLogin() {
+  pw = document.getElementById('pw-input').value;
+  try {
+    const r = await fetch('/api/admin/data?pw=' + encodeURIComponent(pw));
+    if (!r.ok) { document.getElementById('login-err').textContent = 'Feil passord.'; return; }
+    allData = await r.json();
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+    document.getElementById('last-updated').textContent = 'Oppdatert: ' + new Date().toLocaleTimeString('no');
+    render(allData);
+  } catch(e) {
+    document.getElementById('login-err').textContent = 'Kunne ikke koble til serveren.';
+  }
+}
+
+function render(data) {
+  renderStats(data);
+  renderLikert(data);
+  renderRoutes(data);
+  renderOpenAnswers(data);
+  renderReasons(data);
+}
+
+function renderStats(data) {
+  const n = data.length;
+  const changed = data.filter(d => d.route_changed === 'ja').length;
+  const changedPartly = data.filter(d => d.route_changed === 'delvis').length;
+  const avgS6 = avg(data, 's6');
+  const avgS7 = avg(data, 's7');
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">Deltakere totalt</div></div>
+    <div class="stat-card"><div class="stat-num">${changed}</div><div class="stat-label">Endret ruten (ja)</div></div>
+    <div class="stat-card"><div class="stat-num">${avgS6.toFixed(1)}/5</div><div class="stat-label">Snitt: bedre enn kart</div></div>
+    <div class="stat-card"><div class="stat-num">${avgS7.toFixed(1)}/5</div><div class="stat-label">Snitt: ville brukt igjen</div></div>
+  `;
+}
+
+function avg(data, key) {
+  const vals = data.map(d => parseInt(d.survey?.[key])).filter(v => !isNaN(v));
+  return vals.length ? vals.reduce((a,b) => a+b,0)/vals.length : 0;
+}
+
+function renderLikert(data) {
+  const questions = {
+    s1: 'Jeg følte meg til stede i det digitale terrenget',
+    s2: 'Terrenget føltes realistisk nok',
+    s3: 'Bedre forståelse av lavinefare enn kartet alene',
+    s4: 'Hjalp meg å vurdere egne ferdigheter',
+    s5: 'Påvirket hvordan jeg tenker på rutevalg og sikkerhet',
+    s6: 'Bedre enn 2D-kart for å forstå skiterreng',
+    s7: 'Ville brukt verktøyet igjen',
+  };
+
+  let html = '';
+  for (const [key, label] of Object.entries(questions)) {
+    const vals = data.map(d => parseInt(d.survey?.[key])).filter(v => !isNaN(v));
+    const counts = [1,2,3,4,5].map(v => vals.filter(x => x === v).length);
+    const maxCount = Math.max(...counts, 1);
+    const mean = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '-';
+
+    html += `<div class="likert-row">
+      <div class="likert-label">${label}</div>
+      <div class="likert-bars">
+        ${counts.map((c,i) => `<div class="likert-bar" title="${i+1}: ${c} svar">
+          <div class="fill" style="height:${(c/maxCount)*100}%"></div>
+          <span style="position:relative;z-index:1">${i+1}</span>
+        </div>`).join('')}
+      </div>
+      <div class="likert-avg">${mean}</div>
+    </div>`;
+  }
+  document.getElementById('likert-section').innerHTML = html;
+}
+
+function renderRoutes(data) {
+  const counts = {ja:0, delvis:0, nei:0};
+  data.forEach(d => { if (d.route_changed) counts[d.route_changed] = (counts[d.route_changed]||0)+1; });
+  const total = data.length || 1;
+
+  document.getElementById('change-summary').innerHTML = `
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      ${Object.entries(counts).map(([k,v]) => `
+        <div style="background:var(--ice);border-radius:10px;padding:14px 20px;text-align:center">
+          <div style="font-size:1.6rem;font-weight:700;color:var(--navy)">${v}</div>
+          <div style="font-size:0.8rem;color:var(--muted)">${k === 'ja' ? 'Endret ruten' : k === 'delvis' ? 'Delvis endret' : 'Samme rute'}</div>
+          <div style="font-size:0.75rem;color:var(--accent)">${Math.round(v/total*100)}%</div>
+        </div>`).join('')}
+    </div>`;
+
+  const html = data.map(d => {
+    const badge = d.route_changed === 'ja' ? 'badge-ja' : d.route_changed === 'delvis' ? 'badge-delvis' : 'badge-nei';
+    const badgeText = d.route_changed === 'ja' ? 'Endret' : d.route_changed === 'delvis' ? 'Delvis' : 'Samme';
+    return `<div class="route-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div>
+          <div style="background:#e8f0ff;padding:4px 8px;font-size:0.7rem;color:var(--blue);font-weight:600">FØR</div>
+          ${d.route_before ? `<img src="${d.route_before}" alt="Rute før">` : '<div style="height:120px;background:#f0f4f8;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--muted)">Ingen tegning</div>'}
+        </div>
+        <div>
+          <div style="background:#e8ffe8;padding:4px 8px;font-size:0.7rem;color:var(--green);font-weight:600">ETTER</div>
+          ${d.route_after ? `<img src="${d.route_after}" alt="Rute etter">` : '<div style="height:120px;background:#f0f4f8;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--muted)">Ingen tegning</div>'}
+        </div>
+      </div>
+      <div class="route-meta">
+        <strong>ID: ${d.pid}</strong>
+        <span class="changed-badge ${badge}">${badgeText}</span>
+        · ${d.experience || '-'}
+        · ${d.timestamp ? d.timestamp.substring(0,10) : ''}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('route-grid').innerHTML = html || '<p style="color:var(--muted)">Ingen data ennå.</p>';
+}
+
+function renderOpenAnswers(data) {
+  const questions = [
+    {key:'open1', label:'Mest verdifullt med opplevelsen'},
+    {key:'open2', label:'Hva overrasket deg mest'},
+    {key:'open3', label:'Andre kommentarer'},
+  ];
+  let html = '';
+  for (const q of questions) {
+    const answers = data.map(d => ({text: d.survey?.[q.key], pid: d.pid, exp: d.experience})).filter(a => a.text && a.text.trim());
+    if (!answers.length) continue;
+    html += `<h4 style="font-size:0.85rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px">${q.label}</h4>`;
+    html += answers.map(a => `<div class="quote">${a.text}<div class="qmeta">ID: ${a.pid} · ${a.exp || '-'}</div></div>`).join('');
+  }
+  document.getElementById('open-answers').innerHTML = html || '<p style="color:var(--muted)">Ingen åpne svar ennå.</p>';
+}
+
+function renderReasons(data) {
+  let html = `<table class="resp-table"><thead><tr>
+    <th>ID</th><th>Erfaring</th><th>Begrunnelse FØR</th><th>Begrunnelse ETTER</th><th>Endret?</th>
+  </tr></thead><tbody>`;
+  data.forEach(d => {
+    const badge = d.route_changed === 'ja' ? 'badge-ja' : d.route_changed === 'delvis' ? 'badge-delvis' : 'badge-nei';
+    html += `<tr>
+      <td style="font-family:monospace;font-size:0.8rem">${d.pid}</td>
+      <td>${d.experience || '-'}</td>
+      <td>${d.route_before_reason || '-'}</td>
+      <td>${d.route_after_reason || '-'}</td>
+      <td><span class="changed-badge ${badge}">${d.route_changed || '-'}</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('reasons-table').innerHTML = html;
+}
+
+function exportCSV() {
+  const headers = ['pid','timestamp','experience','route_changed','route_before_reason','route_after_reason','s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'];
+  const rows = allData.map(d => headers.map(h => {
+    if (['s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'].includes(h)) return `"${(d.survey?.[h]||'').replace(/"/g,'""')}"`;
+    return `"${(d[h]||'').toString().replace(/"/g,'""')}"`;
+  }).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'brukertest_data.csv'; a.click();
+}
+</script>
+</body>
+</html>
