@@ -1,5 +1,5 @@
-from flask import Flask, request, jsonify, session, send_from_directory
-import json, os, uuid, hashlib
+from flask import Flask, request, jsonify, session, send_from_directory, send_file
+import json, os, uuid, hashlib, base64, io
 from datetime import datetime
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -67,6 +67,54 @@ def admin_data():
     if not check_pw(pw):
         return jsonify({"error": "Unauthorized"}), 401
     return jsonify(load_data())
+
+@app.route("/api/admin/combined/<pid>", methods=["GET"])
+def combined_map(pid):
+    pw = request.args.get("pw", "")
+    if not check_pw(pw):
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    try:
+        from PIL import Image
+    except ImportError:
+        return jsonify({"error": "PIL not installed"}), 500
+
+    responses = load_data()
+    entry = next((r for r in responses if r.get("pid") == pid), None)
+    if not entry:
+        return jsonify({"error": "Not found"}), 404
+
+    # Start with base map
+    base_path = os.path.join(os.path.dirname(__file__), "kart.png")
+    if os.path.exists(base_path):
+        base = Image.open(base_path).convert("RGBA")
+    else:
+        base = Image.new("RGBA", (1200, 780), (200, 220, 180, 255))
+
+    # Overlay route_before (red strokes)
+    if entry.get("route_before"):
+        data_url = entry["route_before"]
+        b64 = data_url.split(",")[1] if "," in data_url else data_url
+        img_bytes = base64.b64decode(b64)
+        overlay = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
+        overlay = overlay.resize(base.size, Image.LANCZOS)
+        base = Image.alpha_composite(base, overlay)
+
+    # Overlay route_after (green strokes)
+    if entry.get("route_after"):
+        data_url = entry["route_after"]
+        b64 = data_url.split(",")[1] if "," in data_url else data_url
+        img_bytes = base64.b64decode(b64)
+        overlay = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
+        overlay = overlay.resize(base.size, Image.LANCZOS)
+        base = Image.alpha_composite(base, overlay)
+
+    output = io.BytesIO()
+    base.convert("RGB").save(output, format="PNG")
+    output.seek(0)
+    return send_file(output, mimetype="image/png",
+                     download_name=f"kombinert_{pid}.png",
+                     as_attachment=True)
 
 @app.route("/api/admin/delete/<pid>", methods=["DELETE"])
 def delete_entry(pid):
