@@ -349,11 +349,20 @@ function getCombinedCanvas(pid) {
 }
 
 function downloadCombinedCanvas(pid) {
-  const url = `/api/admin/combined/${pid}?pw=${encodeURIComponent(pw)}`;
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `kombinert_${pid}.png`;
-  a.click();
+  if (!pw) { alert('Ikke logget inn.'); return; }
+  const url = '/api/admin/combined/' + pid + '?pw=' + encodeURIComponent(pw);
+  fetch(url)
+    .then(r => {
+      if (!r.ok) throw new Error('Status: ' + r.status);
+      return r.blob();
+    })
+    .then(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'kombinert_' + pid + '.png';
+      a.click();
+    })
+    .catch(e => alert('Feil ved nedlasting: ' + e.message));
 }
 
 function downloadRouteOnly(pid, which) {
