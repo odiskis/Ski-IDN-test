@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Topptur Brukertest · NTNU</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --navy: #0d1b2a;
@@ -19,24 +19,9 @@
     --card: #f8fafc;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: #f0f4f8;
-    min-height: 100vh;
-    color: var(--navy);
-  }
-  .topbar {
-    background: var(--navy);
-    color: white;
-    padding: 14px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .topbar-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; letter-spacing: 0.5px; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f8; min-height: 100vh; color: var(--navy); }
+  .topbar { background: var(--navy); color: white; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .topbar-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1.1rem; }
   .topbar-sub { font-size: 0.75rem; color: #8ab4d4; margin-top: 2px; }
   .step-dots { display: flex; gap: 8px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: #2d4a63; transition: all 0.3s; }
@@ -48,24 +33,55 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   .step-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
   .step-badge { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: white; flex-shrink: 0; }
-  .step-title { font-family: 'DM Serif Display', serif; font-size: 1.9rem; color: var(--navy); }
+  .step-title { font-weight: 700; font-size: 1.9rem; color: var(--navy); }
   .step-desc { font-size: 0.95rem; color: var(--muted); margin-top: 4px; }
   .card { background: white; border-radius: 16px; padding: 28px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
   .card-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px; }
+
+  /* CANVAS */
   .canvas-wrap { position: relative; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); cursor: crosshair; }
   .canvas-wrap canvas { display: block; width: 100%; height: auto; }
   .canvas-toolbar { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
-  .tool-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+  .tool-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
   .tool-btn:hover { background: var(--ice); border-color: var(--accent); }
-  .color-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 8px; background: var(--ice); font-size: 0.85rem; font-weight: 500; color: var(--navy); }
+  .color-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; color: var(--navy); }
+  .color-indicator.red { background: #fff0f0; }
+  .color-indicator.orange { background: #fff8f0; }
   .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.15); }
-  .terrain-embed { border-radius: 12px; overflow: hidden; border: 2px solid var(--border); position: relative; }
-  .terrain-embed iframe { width: 100%; height: 480px; border: none; display: block; }
-  .terrain-label { background: var(--navy); color: white; padding: 10px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
-  .controls-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+  /* FULLSCREEN TERRAIN */
+  .terrain-trigger-btn {
+    width: 100%; padding: 20px; border-radius: 12px; border: 2px dashed var(--accent);
+    background: var(--ice); cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1rem; font-weight: 600; color: var(--accent); transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .terrain-trigger-btn:hover { background: #d0eaf8; }
+
+  .terrain-fullscreen {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: black; z-index: 9999;
+    flex-direction: column;
+  }
+  .terrain-fullscreen.active { display: flex; }
+  .terrain-fs-bar {
+    background: var(--navy); color: white; padding: 10px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.85rem; flex-shrink: 0;
+  }
+  .terrain-fs-bar .keys { display: flex; gap: 12px; align-items: center; }
+  .fs-key { background: rgba(255,255,255,0.15); border-radius: 6px; padding: 3px 10px; font-family: monospace; font-size: 0.82rem; }
+  .fs-close { background: var(--accent); border: none; color: white; padding: 7px 18px; border-radius: 8px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 0.88rem; }
+  .terrain-fullscreen iframe { flex: 1; border: none; width: 100%; }
+
+  /* CONTROLS */
+  .controls-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   .control-item { background: var(--ice); border-radius: 10px; padding: 14px; text-align: center; }
   .control-key { display: inline-block; background: var(--navy); color: white; border-radius: 6px; padding: 4px 10px; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; font-family: monospace; }
   .control-desc { font-size: 0.82rem; color: var(--muted); }
+
+  /* SURVEY */
   .survey-q { margin-bottom: 28px; }
   .survey-label { font-weight: 600; font-size: 0.95rem; margin-bottom: 10px; display: block; color: var(--navy); }
   .likert { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -73,45 +89,64 @@
   .likert input { display: none; }
   .likert label:has(input:checked) { background: var(--accent); border-color: var(--accent); color: white; }
   .likert label:hover { border-color: var(--accent); }
-  textarea { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; resize: vertical; min-height: 90px; color: var(--navy); transition: border-color 0.2s; }
+  textarea { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.92rem; resize: vertical; min-height: 90px; color: var(--navy); transition: border-color 0.2s; }
   textarea:focus { outline: none; border-color: var(--accent); }
-  select { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; color: var(--navy); background: white; }
+  select { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.92rem; color: var(--navy); background: white; }
   .radio-group { display: flex; gap: 12px; }
   .radio-group label { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
   .radio-group input { display: none; }
   .radio-group label:has(input:checked) { background: var(--accent); border-color: var(--accent); color: white; }
   .info-box { background: var(--ice); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 20px; font-size: 0.9rem; color: var(--navy); line-height: 1.6; }
   .warning-box { background: #fff8f0; border-left: 4px solid var(--orange); border-radius: 0 10px 10px 0; padding: 14px 18px; margin-bottom: 20px; font-size: 0.88rem; color: #7a3a00; }
-  .btn { padding: 14px 32px; border-radius: 12px; border: none; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  .btn { padding: 14px 32px; border-radius: 12px; border: none; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
   .btn-primary { background: var(--accent); color: white; }
   .btn-primary:hover { background: var(--blue); transform: translateY(-1px); }
   .btn-secondary { background: white; color: var(--navy); border: 1px solid var(--border); }
   .btn-green { background: var(--green); color: white; }
   .btn-green:hover { opacity: 0.9; }
   .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
+
+  /* WELCOME */
   .welcome-hero { background: var(--navy); border-radius: 20px; padding: 48px 40px; color: white; text-align: center; margin-bottom: 28px; position: relative; overflow: hidden; }
   .welcome-hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; background: rgba(46,134,193,0.15); }
-  .welcome-hero h1 { font-family: 'DM Serif Display', serif; font-size: 2.4rem; margin-bottom: 12px; }
+  .welcome-hero h1 { font-weight: 700; font-size: 2.4rem; margin-bottom: 12px; }
   .welcome-hero p { color: #8ab4d4; font-size: 1rem; line-height: 1.7; max-width: 520px; margin: 0 auto 28px; }
   .step-overview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
   .overview-item { background: white; border-radius: 14px; padding: 20px 14px; text-align: center; border: 1px solid var(--border); }
   .overview-num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; margin: 0 auto 10px; font-size: 1rem; }
   .overview-label { font-size: 0.82rem; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
   .overview-time { font-size: 0.75rem; color: var(--muted); }
+
+  /* DONE */
   .done-screen { text-align: center; padding: 60px 20px; }
   .done-icon { font-size: 4rem; margin-bottom: 20px; }
-  .done-screen h2 { font-family: 'DM Serif Display', serif; font-size: 2.2rem; margin-bottom: 12px; color: var(--green); }
+  .done-screen h2 { font-weight: 700; font-size: 2.2rem; margin-bottom: 12px; color: var(--green); }
   .done-screen p { color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.7; }
   .pid-badge { display: inline-block; background: var(--ice); border: 1px solid var(--border); border-radius: 8px; padding: 8px 20px; font-family: monospace; font-size: 1.1rem; color: var(--navy); margin: 20px auto; }
+
   @media (max-width: 600px) {
     .step-overview { grid-template-columns: 1fr 1fr; }
-    .controls-grid { grid-template-columns: 1fr; }
+    .controls-grid { grid-template-columns: 1fr 1fr; }
     .welcome-hero { padding: 32px 20px; }
     .welcome-hero h1 { font-size: 1.8rem; }
   }
 </style>
 </head>
 <body>
+
+<!-- FULLSCREEN TERRAIN OVERLAY -->
+<div class="terrain-fullscreen" id="terrain-fs">
+  <div class="terrain-fs-bar">
+    <div class="keys">
+      <span><span class="fs-key">W A S D</span> Beveg deg</span>
+      <span><span class="fs-key">Piltaster</span> Alternativ</span>
+      <span><span class="fs-key">Mus</span> Se rundt</span>
+      <span><span class="fs-key">ESC</span> Slipp musen / lukk modellen</span>
+    </div>
+    <button class="fs-close" onclick="closeFullscreen()">✕ Lukk terrengmodellen</button>
+  </div>
+  <iframe src="https://odinbo.folk.ntnu.no/spill-test/index.html" allowfullscreen></iframe>
+</div>
 
 <div class="topbar">
   <div>
@@ -136,30 +171,12 @@
       <p>Takk for at du hjelper meg undersøke turplanlegging i forbindelse med min masteroppgave.</p>
       <p style="margin-top:8px;">Estimert tid: <strong style="color:white;">20–30 minutter</strong></p>
     </div>
-
     <div class="step-overview">
-      <div class="overview-item">
-        <div class="overview-num" style="background:var(--blue)">1</div>
-        <div class="overview-label">Kartoppgave før</div>
-        <div class="overview-time">~5 min</div>
-      </div>
-      <div class="overview-item">
-        <div class="overview-num" style="background:var(--accent)">2</div>
-        <div class="overview-label">Terrengmodellen</div>
-        <div class="overview-time">~10 min</div>
-      </div>
-      <div class="overview-item">
-        <div class="overview-num" style="background:var(--green)">3</div>
-        <div class="overview-label">Kartoppgave etter</div>
-        <div class="overview-time">~5 min</div>
-      </div>
-      <div class="overview-item">
-        <div class="overview-num" style="background:var(--orange)">4</div>
-        <div class="overview-label">Survey</div>
-        <div class="overview-time">~5–10 min</div>
-      </div>
+      <div class="overview-item"><div class="overview-num" style="background:var(--blue)">1</div><div class="overview-label">Kartoppgave før</div><div class="overview-time">~5 min</div></div>
+      <div class="overview-item"><div class="overview-num" style="background:var(--accent)">2</div><div class="overview-label">Terrengmodellen</div><div class="overview-time">~10 min</div></div>
+      <div class="overview-item"><div class="overview-num" style="background:var(--green)">3</div><div class="overview-label">Kartoppgave etter</div><div class="overview-time">~5 min</div></div>
+      <div class="overview-item"><div class="overview-num" style="background:var(--orange)">4</div><div class="overview-label">Survey</div><div class="overview-time">~5–10 min</div></div>
     </div>
-
     <div class="card">
       <div class="card-title">Din erfaring</div>
       <div class="survey-q">
@@ -167,18 +184,14 @@
         <select id="exp-level">
           <option value="">Velg nivå...</option>
           <option value="ingen">Ingen erfaring</option>
-          <option value="nybegynner">Nybegynner (1–5 turer)</option>
-          <option value="middels">Middels (6–20 turer)</option>
+          <option value="nybegynner">Nybegynner (1–10 turer)</option>
+          <option value="middels">Middels (10–20 turer)</option>
           <option value="erfaren">Erfaren (20+ turer)</option>
           <option value="ekspert">Ekspert / guide</option>
         </select>
       </div>
     </div>
-
-    <div class="info-box">
-      🔒 Alle svar er anonyme. Du får en tilfeldig ID. Ingen kan knytte svarene dine til deg.
-    </div>
-
+    <div class="info-box">🔒 Alle svar er anonyme. Du får en tilfeldig ID. Ingen kan knytte svarene dine til deg.</div>
     <div style="text-align:center;">
       <button class="btn btn-primary" onclick="startTest()">Start brukertesten →</button>
     </div>
@@ -193,37 +206,22 @@
         <div class="step-desc">Tegn ruten du ville valgt basert på 2D-kartet alene</div>
       </div>
     </div>
-
-    <div class="warning-box">
-      ⚠️ Ikke åpne terrengmodellen ennå. Tegn ruten basert kun på kartet nedenfor.
-    </div>
-
+    <div class="warning-box">⚠️ Ikke åpne terrengmodellen ennå. Tegn ruten basert kun på kartet nedenfor.</div>
     <div class="card">
       <div class="card-title">Kart — Steindalsnosi</div>
-      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:14px;">
-        Du planlegger en topptur til Steindalsnosi. Tegn ruten du ville valgt fra startpunktet til toppen.
-      </p>
-
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:14px;">Du planlegger en topptur til Steindalsnosi. Tegn ruten du ville valgt fra startpunktet til toppen.</p>
       <div class="canvas-toolbar">
-        <div class="color-indicator">
-          <div class="color-dot" style="background:#e74c3c"></div>
-          Tegner i rødt
-        </div>
-        <button class="tool-btn" onclick="undoCanvas()">↩ Angre</button>
-        <button class="tool-btn" onclick="clearCanvas('canvas1')">🗑 Slett alt</button>
+        <div class="color-indicator red"><div class="color-dot" style="background:#e74c3c"></div>Tegner i rødt</div>
+        <button class="tool-btn" onclick="undoCanvas1()">↩ Angre</button>
+        <button class="tool-btn" onclick="clearCanvas1()">🗑 Slett alt</button>
       </div>
-
-      <div class="canvas-wrap">
-        <canvas id="canvas1" width="1200" height="780"></canvas>
-      </div>
+      <div class="canvas-wrap"><canvas id="canvas1"></canvas></div>
     </div>
-
     <div class="card">
       <div class="card-title">Din begrunnelse</div>
       <label class="survey-label">Beskriv kort hvorfor du valgte denne ruten (2–3 setninger). Hva tok du hensyn til?</label>
       <textarea id="reason-before" placeholder="Jeg valgte denne ruten fordi..."></textarea>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(0)">← Tilbake</button>
       <button class="btn btn-primary" onclick="nextStep1()">Gå til terrengmodellen →</button>
@@ -239,37 +237,15 @@
         <div class="step-desc">Utforsk terrenget i 3D som om du planlegger turen</div>
       </div>
     </div>
-
-    <div class="controls-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
-      <div class="control-item">
-        <div class="control-key">W A S D + piltaster</div>
-        <div class="control-desc">Beveg deg frem, tilbake og til sidene</div>
-      </div>
-      <div class="control-item">
-        <div class="control-key">Mus</div>
-        <div class="control-desc">Se opp, ned og til siden</div>
-      </div>
-      <div class="control-item">
-        <div class="control-key">ESC</div>
-        <div class="control-desc">Slipp musen når du er ferdig i modellen</div>
-      </div>
+    <div class="controls-grid">
+      <div class="control-item"><div class="control-key">W A S D</div><div class="control-desc">Beveg deg frem, tilbake og til sidene</div></div>
+      <div class="control-item"><div class="control-key">Piltaster</div><div class="control-desc">Alternativ til WASD</div></div>
+      <div class="control-item"><div class="control-key">Mus</div><div class="control-desc">Se opp, ned og til siden</div></div>
+      <div class="control-item"><div class="control-key">ESC</div><div class="control-desc">Slipp musen / lukk modellen</div></div>
     </div>
-
-    <div class="info-box">
-      🎿 <strong>Din oppgave:</strong> Utforsk terrenget som om du planlegger en topptur til toppen. Tenk på: Hvor er det bratt? Hvor er det eksponert for snøskred? Hvilke linjer ser trygge ut? Du trenger ikke gjøre noe annet enn å navigere og observere.
-    </div>
-
-    <div class="terrain-embed">
-      <div class="terrain-label">
-        🏔️ Interaktiv terrengmodell — klikk inne i modellen for å aktivere styring. Trykk ESC for å sleppe musen.
-      </div>
-      <iframe id="terrain-frame" src="https://odinbo.folk.ntnu.no/spill-test/index.html" allowfullscreen></iframe>
-    </div>
-
-    <div class="warning-box" style="margin-top:16px;">
-      ⏱ Bruk minimum 10 minutter i modellen før du går videre. Utforsk hele terrenget.
-    </div>
-
+    <div class="info-box">🎿 <strong>Din oppgave:</strong> Utforsk terrenget som om du planlegger en topptur til toppen. Tenk på: Hvor er det bratt? Hvor er det eksponert for snøskred? Hvilke linjer ser trygge ut?</div>
+    <button class="terrain-trigger-btn" onclick="openFullscreen()">🏔️ Åpne terrengmodellen i fullskjerm</button>
+    <div class="warning-box" style="margin-top:16px;">⏱ Bruk minimum 10 minutter i modellen før du går videre. Utforsk hele terrenget. Trykk ESC for å sleppe musen, og lukk med knappen i toppen.</div>
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(1)">← Tilbake</button>
       <button class="btn btn-primary" onclick="goStep(3)">Jeg er ferdig med terrengmodellen →</button>
@@ -285,29 +261,17 @@
         <div class="step-desc">Tegn ruten på nytt etter opplevelsen i 3D</div>
       </div>
     </div>
-
-    <div class="info-box">
-      Det er helt greit om ruten er den samme som før. Vi er interessert i din ærlige vurdering — ikke i at du skal endre mening.
-    </div>
-
+    <div class="info-box">Det er helt greit om ruten er den samme som før. Vi er interessert i din ærlige vurdering.</div>
     <div class="card">
       <div class="card-title">Kart — Steindalsnosi</div>
-      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:14px;">
-        Tegn ruten du nå ville valgt etter å ha sett terrenget i 3D.
-      </p>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:14px;">Tegn ruten du nå ville valgt etter å ha sett terrenget i 3D.</p>
       <div class="canvas-toolbar">
-        <div class="color-indicator">
-          <div class="color-dot" style="background:#e67e22"></div>
-          Tegner i oransje
-        </div>
+        <div class="color-indicator orange"><div class="color-dot" style="background:#e67e22"></div>Tegner i oransje</div>
         <button class="tool-btn" onclick="undoCanvas2()">↩ Angre</button>
-        <button class="tool-btn" onclick="clearCanvas('canvas2')">🗑 Slett alt</button>
+        <button class="tool-btn" onclick="clearCanvas2()">🗑 Slett alt</button>
       </div>
-      <div class="canvas-wrap">
-        <canvas id="canvas2" width="1200" height="780"></canvas>
-      </div>
+      <div class="canvas-wrap"><canvas id="canvas2"></canvas></div>
     </div>
-
     <div class="card">
       <div class="card-title">Endringer og refleksjon</div>
       <div class="survey-q">
@@ -323,7 +287,6 @@
         <textarea id="reason-after" placeholder="Etter å ha sett terrenget i 3D valgte jeg å..."></textarea>
       </div>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(2)">← Tilbake</button>
       <button class="btn btn-primary" onclick="nextStep3()">Gå til surveyen →</button>
@@ -334,12 +297,8 @@
   <div class="step" id="step4">
     <div class="step-header">
       <div class="step-badge" style="background:var(--orange)">4</div>
-      <div>
-        <div class="step-title">Survey</div>
-        <div class="step-desc">Siste steg — svar på spørsmål om opplevelsen</div>
-      </div>
+      <div><div class="step-title">Survey</div><div class="step-desc">Siste steg — svar på spørsmål om opplevelsen</div></div>
     </div>
-
     <div class="card">
       <div class="card-title">Tilstedeværelse</div>
       <div class="survey-q">
@@ -363,7 +322,6 @@
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">Terrengforståelse</div>
       <div class="survey-q">
@@ -397,7 +355,6 @@
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">Totalopplevelse</div>
       <div class="survey-q">
@@ -421,7 +378,6 @@
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">Åpne spørsmål</div>
       <div class="survey-q">
@@ -437,7 +393,6 @@
         <textarea id="open3" placeholder="Valgfritt..."></textarea>
       </div>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(3)">← Tilbake</button>
       <button class="btn btn-green" onclick="submitAll()">✓ Send inn svarene mine</button>
@@ -459,16 +414,23 @@
 
 <script>
 let pid = null;
+const MAP_URL = 'https://raw.githubusercontent.com/odiskis/Ski-IDN-test/main/skitest/static/kart.png';
 
+// ── SESSION ──
 async function startTest() {
   const exp = document.getElementById('exp-level').value;
   if (!exp) { alert('Velg erfaringsnivå først.'); return; }
-  const r = await fetch('/api/start', {method:'POST'});
-  const d = await r.json();
-  pid = d.pid;
+  try {
+    const r = await fetch('/api/start', {method:'POST'});
+    const d = await r.json();
+    pid = d.pid;
+  } catch(e) {
+    pid = Math.random().toString(36).substring(2,10);
+  }
   goStep(1);
 }
 
+// ── NAVIGATION ──
 function goStep(n) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById('step'+n).classList.add('active');
@@ -481,70 +443,124 @@ function goStep(n) {
 }
 
 function nextStep1() {
-  const r = document.getElementById('reason-before').value.trim();
-  if (!r) { alert('Skriv en kort begrunnelse for rutevalget ditt.'); return; }
+  if (!document.getElementById('reason-before').value.trim()) { alert('Skriv en kort begrunnelse for rutevalget ditt.'); return; }
   goStep(2);
 }
-
 function nextStep3() {
-  const changed = document.querySelector('input[name="changed"]:checked');
-  if (!changed) { alert('Svar på om du endret ruten.'); return; }
+  if (!document.querySelector('input[name="changed"]:checked')) { alert('Svar på om du endret ruten.'); return; }
   goStep(4);
 }
 
-// ── CANVAS 1 (rød) ──
+// ── FULLSCREEN TERRAIN ──
+function openFullscreen() {
+  document.getElementById('terrain-fs').classList.add('active');
+}
+function closeFullscreen() {
+  document.getElementById('terrain-fs').classList.remove('active');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeFullscreen();
+});
+
+// ── CANVAS SETUP ──
+const mapImg = new Image();
+mapImg.crossOrigin = 'anonymous';
+
 const c1 = document.getElementById('canvas1');
 const ctx1 = c1.getContext('2d');
-let drawing1 = false, history1 = [];
-const mapImg = new Image();
-mapImg.onload = function() {
-  ctx1.drawImage(mapImg, 0, 0, c1.width, c1.height);
-  const c2 = document.getElementById('canvas2');
-  const ctx2 = c2.getContext('2d');
-  ctx2.drawImage(mapImg, 0, 0, c2.width, c2.height);
-  initCanvas2();
-};
-mapImg.src = 'https://raw.githubusercontent.com/odiskis/Ski-IDN-test/main/skitest/static/kart.png';
-
-function initCanvas1() {
-  c1.addEventListener('mousedown', e => { drawing1=true; history1.push(ctx1.getImageData(0,0,c1.width,c1.height)); const p=getPos(c1,e); ctx1.beginPath(); ctx1.moveTo(p.x,p.y); ctx1.strokeStyle='#e74c3c'; ctx1.lineWidth=4; ctx1.lineCap='round'; ctx1.lineJoin='round'; });
-  c1.addEventListener('mousemove', e => { if(!drawing1) return; const p=getPos(c1,e); ctx1.lineTo(p.x,p.y); ctx1.stroke(); });
-  c1.addEventListener('mouseup', () => { drawing1=false; ctx1.beginPath(); });
-  c1.addEventListener('mouseleave', () => { drawing1=false; });
-  c1.addEventListener('touchstart', e => { e.preventDefault(); drawing1=true; history1.push(ctx1.getImageData(0,0,c1.width,c1.height)); const p=getPos(c1,e.touches[0]); ctx1.beginPath(); ctx1.moveTo(p.x,p.y); ctx1.strokeStyle='#e74c3c'; ctx1.lineWidth=4; ctx1.lineCap='round'; ctx1.lineJoin='round'; }, {passive:false});
-  c1.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing1) return; const p=getPos(c1,e.touches[0]); ctx1.lineTo(p.x,p.y); ctx1.stroke(); }, {passive:false});
-  c1.addEventListener('touchend', () => { drawing1=false; });
-}
-initCanvas1();
-
-// ── CANVAS 2 (oransje) ──
 const c2 = document.getElementById('canvas2');
 const ctx2 = c2.getContext('2d');
-let drawing2 = false, history2 = [];
 
-function initCanvas2() {
-  c2.addEventListener('mousedown', e => { drawing2=true; history2.push(ctx2.getImageData(0,0,c2.width,c2.height)); const p=getPos(c2,e); ctx2.beginPath(); ctx2.moveTo(p.x,p.y); ctx2.strokeStyle='#e67e22'; ctx2.lineWidth=4; ctx2.lineCap='round'; ctx2.lineJoin='round'; });
-  c2.addEventListener('mousemove', e => { if(!drawing2) return; const p=getPos(c2,e); ctx2.lineTo(p.x,p.y); ctx2.stroke(); });
-  c2.addEventListener('mouseup', () => { drawing2=false; ctx2.beginPath(); });
-  c2.addEventListener('mouseleave', () => { drawing2=false; });
-  c2.addEventListener('touchstart', e => { e.preventDefault(); drawing2=true; history2.push(ctx2.getImageData(0,0,c2.width,c2.height)); const p=getPos(c2,e.touches[0]); ctx2.beginPath(); ctx2.moveTo(p.x,p.y); ctx2.strokeStyle='#e67e22'; ctx2.lineWidth=4; ctx2.lineCap='round'; ctx2.lineJoin='round'; }, {passive:false});
-  c2.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing2) return; const p=getPos(c2,e.touches[0]); ctx2.lineTo(p.x,p.y); ctx2.stroke(); }, {passive:false});
-  c2.addEventListener('touchend', () => { drawing2=false; });
-}
+let history1 = [], history2 = [];
+let drawing1 = false, drawing2 = false;
+
+mapImg.onload = function() {
+  // Set canvas dimensions to match image exactly
+  c1.width = mapImg.naturalWidth;
+  c1.height = mapImg.naturalHeight;
+  c2.width = mapImg.naturalWidth;
+  c2.height = mapImg.naturalHeight;
+  ctx1.drawImage(mapImg, 0, 0);
+  ctx2.drawImage(mapImg, 0, 0);
+};
+mapImg.onerror = function() {
+  // fallback dimensions
+  c1.width = 1200; c1.height = 780;
+  c2.width = 1200; c2.height = 780;
+  ctx1.fillStyle = '#c8d8a8'; ctx1.fillRect(0,0,1200,780);
+  ctx1.fillStyle = '#e74c3c'; ctx1.font = 'bold 20px sans-serif'; ctx1.textAlign='center';
+  ctx1.fillText('Kart kunne ikke lastes inn', 600, 390);
+  ctx2.fillStyle = '#c8d8a8'; ctx2.fillRect(0,0,1200,780);
+};
+mapImg.src = MAP_URL;
 
 function getPos(canvas, e) {
   const r = canvas.getBoundingClientRect();
-  return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) };
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - r.left) * (canvas.width / r.width),
+    y: (src.clientY - r.top) * (canvas.height / r.height)
+  };
 }
 
-function undoCanvas() { if(history1.length>0) ctx1.putImageData(history1.pop(),0,0); }
-function undoCanvas2() { if(history2.length>0) ctx2.putImageData(history2.pop(),0,0); }
-
-function clearCanvas(id) {
-  if (id==='canvas1') { ctx1.clearRect(0,0,c1.width,c1.height); ctx1.drawImage(mapImg,0,0,c1.width,c1.height); history1=[]; }
-  else { ctx2.clearRect(0,0,c2.width,c2.height); ctx2.drawImage(mapImg,0,0,c2.width,c2.height); history2=[]; }
+// Canvas 1 — red
+function startDraw1(e) {
+  e.preventDefault();
+  drawing1 = true;
+  history1.push(ctx1.getImageData(0,0,c1.width,c1.height));
+  const p = getPos(c1, e);
+  ctx1.beginPath(); ctx1.moveTo(p.x, p.y);
+  ctx1.strokeStyle = '#e74c3c'; ctx1.lineWidth = 4;
+  ctx1.lineCap = 'round'; ctx1.lineJoin = 'round';
 }
+function moveDraw1(e) {
+  e.preventDefault();
+  if (!drawing1) return;
+  const p = getPos(c1, e);
+  ctx1.lineTo(p.x, p.y); ctx1.stroke();
+}
+function endDraw1() { drawing1 = false; ctx1.beginPath(); }
 
+c1.addEventListener('mousedown', startDraw1);
+c1.addEventListener('mousemove', moveDraw1);
+c1.addEventListener('mouseup', endDraw1);
+c1.addEventListener('mouseleave', endDraw1);
+c1.addEventListener('touchstart', startDraw1, {passive:false});
+c1.addEventListener('touchmove', moveDraw1, {passive:false});
+c1.addEventListener('touchend', endDraw1);
+
+// Canvas 2 — orange
+function startDraw2(e) {
+  e.preventDefault();
+  drawing2 = true;
+  history2.push(ctx2.getImageData(0,0,c2.width,c2.height));
+  const p = getPos(c2, e);
+  ctx2.beginPath(); ctx2.moveTo(p.x, p.y);
+  ctx2.strokeStyle = '#e67e22'; ctx2.lineWidth = 4;
+  ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
+}
+function moveDraw2(e) {
+  e.preventDefault();
+  if (!drawing2) return;
+  const p = getPos(c2, e);
+  ctx2.lineTo(p.x, p.y); ctx2.stroke();
+}
+function endDraw2() { drawing2 = false; ctx2.beginPath(); }
+
+c2.addEventListener('mousedown', startDraw2);
+c2.addEventListener('mousemove', moveDraw2);
+c2.addEventListener('mouseup', endDraw2);
+c2.addEventListener('mouseleave', endDraw2);
+c2.addEventListener('touchstart', startDraw2, {passive:false});
+c2.addEventListener('touchmove', moveDraw2, {passive:false});
+c2.addEventListener('touchend', endDraw2);
+
+function undoCanvas1() { if (history1.length > 0) ctx1.putImageData(history1.pop(), 0, 0); }
+function undoCanvas2() { if (history2.length > 0) ctx2.putImageData(history2.pop(), 0, 0); }
+function clearCanvas1() { history1 = []; ctx1.clearRect(0,0,c1.width,c1.height); ctx1.drawImage(mapImg,0,0); }
+function clearCanvas2() { history2 = []; ctx2.clearRect(0,0,c2.width,c2.height); ctx2.drawImage(mapImg,0,0); }
+
+// ── SUBMIT ──
 async function submitAll() {
   const required = ['s1','s2','s3','s4','s5','s6','s7'];
   for (const name of required) {
@@ -553,7 +569,7 @@ async function submitAll() {
     }
   }
   const survey = {};
-  required.forEach(name => { survey[name] = document.querySelector(`input[name="${name}"]:checked`).value; });
+  required.forEach(n => { survey[n] = document.querySelector(`input[name="${n}"]:checked`).value; });
   survey.open1 = document.getElementById('open1').value;
   survey.open2 = document.getElementById('open2').value;
   survey.open3 = document.getElementById('open3').value;
@@ -569,12 +585,16 @@ async function submitAll() {
   };
 
   try {
-    const r = await fetch('/api/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const r = await fetch('/api/submit', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
     const d = await r.json();
     document.getElementById('done-pid').textContent = 'Deltaker-ID: ' + (d.pid || pid);
     goStep(5);
   } catch(e) {
-    alert('Noe gikk galt. Prøv igjen eller kontakt odinbo@stud.ntnu.no');
+    alert('Noe gikk galt ved innsending. Prøv igjen eller kontakt odinbo@stud.ntnu.no');
   }
 }
 </script>
