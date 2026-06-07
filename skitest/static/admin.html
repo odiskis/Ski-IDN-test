@@ -349,15 +349,11 @@ function getCombinedCanvas(pid) {
 }
 
 function downloadCombinedCanvas(pid) {
-  const canvas = getCombinedCanvas(pid);
-  if (!canvas) { alert('Finner ikke kartet.'); return; }
-  // Wait a moment for images to load
-  setTimeout(() => {
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = `kombinert_${pid}.png`;
-    a.click();
-  }, 500);
+  const url = `/api/admin/combined/${pid}?pw=${encodeURIComponent(pw)}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kombinert_${pid}.png`;
+  a.click();
 }
 
 function downloadRouteOnly(pid, which) {
