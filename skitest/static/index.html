@@ -7,79 +7,79 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #0d1b2a;
-    --blue: #1b4f8a;
-    --accent: #2e86c1;
-    --ice: #eaf4fb;
-    --green: #1e8449;
-    --orange: #d35400;
-    --white: #ffffff;
-    --muted: #6b7280;
-    --border: #e2e8f0;
-    --card: #f8fafc;
+    --navy: #1D2B3A;
+    --blue: #2C5282;
+    --accent: #4A90D9;
+    --yellow: #F5C842;
+    --green: #3A7D44;
+    --light-green: #6DBF8A;
+    --orange: #E07B39;
+    --white: #FFFFFF;
+    --muted: #7A8C9E;
+    --border: #D9E4EE;
+    --card: #F4F8FB;
+    --bg: #EBF2F8;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f8; min-height: 100vh; color: var(--navy); }
-  .topbar { background: var(--navy); color: white; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-  .topbar-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1.1rem; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); min-height: 100vh; color: var(--navy); }
+  .topbar { background: var(--navy); color: white; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .topbar-title { font-weight: 700; font-size: 1.1rem; }
   .topbar-sub { font-size: 0.75rem; color: #8ab4d4; margin-top: 2px; }
   .step-dots { display: flex; gap: 8px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: #2d4a63; transition: all 0.3s; }
   .dot.active { background: var(--accent); transform: scale(1.3); }
   .dot.done { background: var(--green); }
-  .container { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 32px 80px; }
   .step { display: none; animation: fadeIn 0.4s ease; }
   .step.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
   .step-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
   .step-badge { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: white; flex-shrink: 0; }
   .step-title { font-weight: 700; font-size: 1.9rem; color: var(--navy); }
   .step-desc { font-size: 0.95rem; color: var(--muted); margin-top: 4px; }
-  .card { background: white; border-radius: 16px; padding: 28px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+
+  .card { background: white; border-radius: 16px; padding: 28px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
   .card-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px; }
 
   /* CANVAS */
-  .canvas-wrap { position: relative; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); cursor: crosshair; }
+  .canvas-wrap { border-radius: 12px; overflow: hidden; border: 2px solid var(--border); cursor: crosshair; }
   .canvas-wrap canvas { display: block; width: 100%; height: auto; }
-  .canvas-toolbar { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
-  .tool-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
-  .tool-btn:hover { background: var(--ice); border-color: var(--accent); }
-  .color-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; color: var(--navy); }
-  .color-indicator.red { background: #fff0f0; }
-  .color-indicator.orange { background: #fff8f0; }
-  .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.15); }
+  .canvas-toolbar { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+  .tool-btn { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+  .tool-btn:hover { background: var(--card); border-color: var(--accent); }
+  .color-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; }
+  .color-indicator.red { background: #FFF0F0; color: #C0392B; }
+  .color-indicator.green { background: #F0FFF4; color: var(--green); }
+  .color-dot { width: 16px; height: 16px; border-radius: 50%; }
 
   /* FULLSCREEN TERRAIN */
-  .terrain-trigger-btn {
-    width: 100%; padding: 20px; border-radius: 12px; border: 2px dashed var(--accent);
-    background: var(--ice); cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 1rem; font-weight: 600; color: var(--accent); transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-  }
-  .terrain-trigger-btn:hover { background: #d0eaf8; }
-
-  .terrain-fullscreen {
-    display: none;
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: black; z-index: 9999;
-    flex-direction: column;
-  }
+  .terrain-fullscreen { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: black; z-index: 9999; flex-direction: column; }
   .terrain-fullscreen.active { display: flex; }
-  .terrain-fs-bar {
-    background: var(--navy); color: white; padding: 10px 20px;
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 0.85rem; flex-shrink: 0;
-  }
-  .terrain-fs-bar .keys { display: flex; gap: 12px; align-items: center; }
+  .terrain-fs-bar { background: var(--navy); color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; flex-shrink: 0; }
+  .terrain-fs-bar .keys { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
   .fs-key { background: rgba(255,255,255,0.15); border-radius: 6px; padding: 3px 10px; font-family: monospace; font-size: 0.82rem; }
-  .fs-close { background: var(--accent); border: none; color: white; padding: 7px 18px; border-radius: 8px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 0.88rem; }
+  .fs-close { background: var(--accent); border: none; color: white; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.9rem; }
   .terrain-fullscreen iframe { flex: 1; border: none; width: 100%; }
 
+  .terrain-open-btn {
+    width: 100%; padding: 28px 20px; border-radius: 16px; border: none;
+    background: var(--accent); cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.15rem; font-weight: 700; color: white; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    box-shadow: 0 4px 16px rgba(74,144,217,0.35);
+  }
+  .terrain-open-btn:hover { background: var(--blue); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74,144,217,0.4); }
+
   /* CONTROLS */
-  .controls-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .control-item { background: var(--ice); border-radius: 10px; padding: 14px; text-align: center; }
+  .controls-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .control-item { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
   .control-key { display: inline-block; background: var(--navy); color: white; border-radius: 6px; padding: 4px 10px; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; font-family: monospace; }
   .control-desc { font-size: 0.82rem; color: var(--muted); }
+
+  /* INFO BOX */
+  .info-combined { background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 20px 24px; margin-bottom: 20px; font-size: 0.92rem; color: var(--navy); line-height: 1.7; }
 
   /* SURVEY */
   .survey-q { margin-bottom: 28px; }
@@ -89,59 +89,58 @@
   .likert input { display: none; }
   .likert label:has(input:checked) { background: var(--accent); border-color: var(--accent); color: white; }
   .likert label:hover { border-color: var(--accent); }
-  textarea { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.92rem; resize: vertical; min-height: 90px; color: var(--navy); transition: border-color 0.2s; }
-  textarea:focus { outline: none; border-color: var(--accent); }
-  select { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.92rem; color: var(--navy); background: white; }
-  .radio-group { display: flex; gap: 12px; }
-  .radio-group label { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  textarea { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.92rem; resize: vertical; min-height: 90px; color: var(--navy); transition: border-color 0.2s; background: var(--card); }
+  textarea:focus { outline: none; border-color: var(--accent); background: white; }
+  select { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.92rem; color: var(--navy); background: var(--card); }
+  .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+  .radio-group label { flex: 1; min-width: 120px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
   .radio-group input { display: none; }
   .radio-group label:has(input:checked) { background: var(--accent); border-color: var(--accent); color: white; }
-  .info-box { background: var(--ice); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 20px; font-size: 0.9rem; color: var(--navy); line-height: 1.6; }
-  .warning-box { background: #fff8f0; border-left: 4px solid var(--orange); border-radius: 0 10px 10px 0; padding: 14px 18px; margin-bottom: 20px; font-size: 0.88rem; color: #7a3a00; }
+
   .btn { padding: 14px 32px; border-radius: 12px; border: none; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
   .btn-primary { background: var(--accent); color: white; }
   .btn-primary:hover { background: var(--blue); transform: translateY(-1px); }
   .btn-secondary { background: white; color: var(--navy); border: 1px solid var(--border); }
   .btn-green { background: var(--green); color: white; }
-  .btn-green:hover { opacity: 0.9; }
+  .btn-green:hover { background: #2d6337; }
   .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
 
   /* WELCOME */
-  .welcome-hero { background: var(--navy); border-radius: 20px; padding: 48px 40px; color: white; text-align: center; margin-bottom: 28px; position: relative; overflow: hidden; }
-  .welcome-hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; background: rgba(46,134,193,0.15); }
-  .welcome-hero h1 { font-weight: 700; font-size: 2.4rem; margin-bottom: 12px; }
-  .welcome-hero p { color: #8ab4d4; font-size: 1rem; line-height: 1.7; max-width: 520px; margin: 0 auto 28px; }
+  .welcome-hero { background: var(--navy); border-radius: 20px; padding: 56px 48px; color: white; text-align: center; margin-bottom: 28px; position: relative; overflow: hidden; }
+  .welcome-hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 260px; height: 260px; border-radius: 50%; background: rgba(74,144,217,0.12); }
+  .welcome-hero::after { content: ''; position: absolute; bottom: -40px; left: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(245,200,66,0.08); }
+  .welcome-hero h1 { font-weight: 700; font-size: 2.6rem; margin-bottom: 16px; }
+  .welcome-hero p { color: #8ab4d4; font-size: 1.05rem; line-height: 1.7; max-width: 540px; margin: 0 auto 8px; }
+
   .step-overview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
-  .overview-item { background: white; border-radius: 14px; padding: 20px 14px; text-align: center; border: 1px solid var(--border); }
-  .overview-num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; margin: 0 auto 10px; font-size: 1rem; }
-  .overview-label { font-size: 0.82rem; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+  .overview-item { background: white; border-radius: 14px; padding: 22px 14px; text-align: center; border: 1px solid var(--border); }
+  .overview-num { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; margin: 0 auto 10px; font-size: 1rem; }
+  .overview-label { font-size: 0.83rem; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
   .overview-time { font-size: 0.75rem; color: var(--muted); }
 
-  /* DONE */
-  .done-screen { text-align: center; padding: 60px 20px; }
+  .done-screen { text-align: center; padding: 80px 20px; }
   .done-icon { font-size: 4rem; margin-bottom: 20px; }
   .done-screen h2 { font-weight: 700; font-size: 2.2rem; margin-bottom: 12px; color: var(--green); }
   .done-screen p { color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.7; }
-  .pid-badge { display: inline-block; background: var(--ice); border: 1px solid var(--border); border-radius: 8px; padding: 8px 20px; font-family: monospace; font-size: 1.1rem; color: var(--navy); margin: 20px auto; }
+  .pid-badge { display: inline-block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 24px; font-family: monospace; font-size: 1.1rem; color: var(--navy); margin: 20px auto; }
 
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
     .step-overview { grid-template-columns: 1fr 1fr; }
     .controls-grid { grid-template-columns: 1fr 1fr; }
-    .welcome-hero { padding: 32px 20px; }
-    .welcome-hero h1 { font-size: 1.8rem; }
+    .container { padding: 24px 16px 60px; }
   }
 </style>
 </head>
 <body>
 
-<!-- FULLSCREEN TERRAIN OVERLAY -->
+<!-- FULLSCREEN TERRAIN -->
 <div class="terrain-fullscreen" id="terrain-fs">
   <div class="terrain-fs-bar">
     <div class="keys">
       <span><span class="fs-key">W A S D</span> Beveg deg</span>
       <span><span class="fs-key">Piltaster</span> Alternativ</span>
       <span><span class="fs-key">Mus</span> Se rundt</span>
-      <span><span class="fs-key">ESC</span> Slipp musen / lukk modellen</span>
+      <span><span class="fs-key">ESC</span> Slipp musen / lukk</span>
     </div>
     <button class="fs-close" onclick="closeFullscreen()">✕ Lukk terrengmodellen</button>
   </div>
@@ -164,12 +163,12 @@
 
 <div class="container">
 
-  <!-- STEP 0: WELCOME -->
+  <!-- STEP 0 -->
   <div class="step active" id="step0">
     <div class="welcome-hero">
       <h1>Velkommen til brukertest</h1>
       <p>Takk for at du hjelper meg undersøke turplanlegging i forbindelse med min masteroppgave.</p>
-      <p style="margin-top:8px;">Estimert tid: <strong style="color:white;">20–30 minutter</strong></p>
+      <p style="margin-top:6px;font-size:0.95rem;">Estimert tid: <strong style="color:white;">20–30 minutter</strong></p>
     </div>
     <div class="step-overview">
       <div class="overview-item"><div class="overview-num" style="background:var(--blue)">1</div><div class="overview-label">Kartoppgave før</div><div class="overview-time">~5 min</div></div>
@@ -191,13 +190,15 @@
         </select>
       </div>
     </div>
-    <div class="info-box">🔒 Alle svar er anonyme. Du får en tilfeldig ID. Ingen kan knytte svarene dine til deg.</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:0.9rem;color:var(--muted);">
+      🔒 Alle svar er anonyme. Du får en tilfeldig ID. Ingen kan knytte svarene dine til deg.
+    </div>
     <div style="text-align:center;">
       <button class="btn btn-primary" onclick="startTest()">Start brukertesten →</button>
     </div>
   </div>
 
-  <!-- STEP 1: KART FØR -->
+  <!-- STEP 1 -->
   <div class="step" id="step1">
     <div class="step-header">
       <div class="step-badge" style="background:var(--blue)">1</div>
@@ -206,12 +207,11 @@
         <div class="step-desc">Tegn ruten du ville valgt basert på 2D-kartet alene</div>
       </div>
     </div>
-    <div class="warning-box">⚠️ Ikke åpne terrengmodellen ennå. Tegn ruten basert kun på kartet nedenfor.</div>
     <div class="card">
       <div class="card-title">Kart — Steindalsnosi</div>
-      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:14px;">Du planlegger en topptur til Steindalsnosi. Tegn ruten du ville valgt fra startpunktet til toppen.</p>
+      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;">Du planlegger en topptur til Steindalsnosi. Tegn ruten du ville valgt fra startpunktet til toppen.</p>
       <div class="canvas-toolbar">
-        <div class="color-indicator red"><div class="color-dot" style="background:#e74c3c"></div>Tegner i rødt</div>
+        <div class="color-indicator red"><div class="color-dot" style="background:#C0392B"></div>Tegner i rødt</div>
         <button class="tool-btn" onclick="undoCanvas1()">↩ Angre</button>
         <button class="tool-btn" onclick="clearCanvas1()">🗑 Slett alt</button>
       </div>
@@ -228,7 +228,7 @@
     </div>
   </div>
 
-  <!-- STEP 2: TERRENGMODELLEN -->
+  <!-- STEP 2 -->
   <div class="step" id="step2">
     <div class="step-header">
       <div class="step-badge" style="background:var(--accent)">2</div>
@@ -243,16 +243,23 @@
       <div class="control-item"><div class="control-key">Mus</div><div class="control-desc">Se opp, ned og til siden</div></div>
       <div class="control-item"><div class="control-key">ESC</div><div class="control-desc">Slipp musen / lukk modellen</div></div>
     </div>
-    <div class="info-box">🎿 <strong>Din oppgave:</strong> Utforsk terrenget som om du planlegger en topptur til toppen. Tenk på: Hvor er det bratt? Hvor er det eksponert for snøskred? Hvilke linjer ser trygge ut?</div>
-    <button class="terrain-trigger-btn" onclick="openFullscreen()">🏔️ Åpne terrengmodellen i fullskjerm</button>
-    <div class="warning-box" style="margin-top:16px;">⏱ Bruk minimum 10 minutter i modellen før du går videre. Utforsk hele terrenget. Trykk ESC for å sleppe musen, og lukk med knappen i toppen.</div>
+
+    <button class="terrain-open-btn" onclick="openFullscreen()">
+      🏔️ Åpne terrengmodellen i fullskjerm — trykk her
+    </button>
+
+    <div class="info-combined" style="margin-top:20px;">
+      🎿 <strong>Din oppgave:</strong> Utforsk terrenget som om du planlegger en topptur til toppen. Tenk på: Hvor er det bratt? Hvor er det eksponert for snøskred? Hvilke linjer ser trygge ut?<br><br>
+      ⏱ Bruk minimum 10 minutter i modellen før du går videre. Utforsk hele terrenget. Trykk ESC for å sleppe musen, og lukk med knappen i toppen.
+    </div>
+
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(1)">← Tilbake</button>
       <button class="btn btn-primary" onclick="goStep(3)">Jeg er ferdig med terrengmodellen →</button>
     </div>
   </div>
 
-  <!-- STEP 3: KART ETTER -->
+  <!-- STEP 3 -->
   <div class="step" id="step3">
     <div class="step-header">
       <div class="step-badge" style="background:var(--green)">3</div>
@@ -261,12 +268,14 @@
         <div class="step-desc">Tegn ruten på nytt etter opplevelsen i 3D</div>
       </div>
     </div>
-    <div class="info-box">Det er helt greit om ruten er den samme som før. Vi er interessert i din ærlige vurdering.</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:0.9rem;color:var(--muted);">
+      Det er helt greit om ruten er den samme som før. Vi er interessert i din ærlige vurdering.
+    </div>
     <div class="card">
       <div class="card-title">Kart — Steindalsnosi</div>
-      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:14px;">Tegn ruten du nå ville valgt etter å ha sett terrenget i 3D.</p>
+      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;">Tegn ruten du nå ville valgt etter å ha sett terrenget i 3D.</p>
       <div class="canvas-toolbar">
-        <div class="color-indicator orange"><div class="color-dot" style="background:#e67e22"></div>Tegner i oransje</div>
+        <div class="color-indicator green"><div class="color-dot" style="background:var(--green)"></div>Tegner i grønt</div>
         <button class="tool-btn" onclick="undoCanvas2()">↩ Angre</button>
         <button class="tool-btn" onclick="clearCanvas2()">🗑 Slett alt</button>
       </div>
@@ -293,7 +302,7 @@
     </div>
   </div>
 
-  <!-- STEP 4: SURVEY -->
+  <!-- STEP 4 -->
   <div class="step" id="step4">
     <div class="step-header">
       <div class="step-badge" style="background:var(--orange)">4</div>
@@ -413,10 +422,9 @@
 </div>
 
 <script>
-let pid = null;
 const MAP_URL = 'https://raw.githubusercontent.com/odiskis/Ski-IDN-test/main/skitest/static/kart.png';
+let pid = null;
 
-// ── SESSION ──
 async function startTest() {
   const exp = document.getElementById('exp-level').value;
   if (!exp) { alert('Velg erfaringsnivå først.'); return; }
@@ -430,7 +438,6 @@ async function startTest() {
   goStep(1);
 }
 
-// ── NAVIGATION ──
 function goStep(n) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById('step'+n).classList.add('active');
@@ -451,114 +458,63 @@ function nextStep3() {
   goStep(4);
 }
 
-// ── FULLSCREEN TERRAIN ──
-function openFullscreen() {
-  document.getElementById('terrain-fs').classList.add('active');
-}
-function closeFullscreen() {
-  document.getElementById('terrain-fs').classList.remove('active');
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeFullscreen();
-});
+function openFullscreen() { document.getElementById('terrain-fs').classList.add('active'); }
+function closeFullscreen() { document.getElementById('terrain-fs').classList.remove('active'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
 
-// ── CANVAS SETUP ──
+// ── CANVAS ──
 const mapImg = new Image();
 mapImg.crossOrigin = 'anonymous';
-
 const c1 = document.getElementById('canvas1');
 const ctx1 = c1.getContext('2d');
 const c2 = document.getElementById('canvas2');
 const ctx2 = c2.getContext('2d');
-
-let history1 = [], history2 = [];
-let drawing1 = false, drawing2 = false;
+let history1 = [], history2 = [], drawing1 = false, drawing2 = false;
 
 mapImg.onload = function() {
-  // Set canvas dimensions to match image exactly
-  c1.width = mapImg.naturalWidth;
-  c1.height = mapImg.naturalHeight;
-  c2.width = mapImg.naturalWidth;
-  c2.height = mapImg.naturalHeight;
+  c1.width = mapImg.naturalWidth; c1.height = mapImg.naturalHeight;
+  c2.width = mapImg.naturalWidth; c2.height = mapImg.naturalHeight;
   ctx1.drawImage(mapImg, 0, 0);
   ctx2.drawImage(mapImg, 0, 0);
 };
 mapImg.onerror = function() {
-  // fallback dimensions
-  c1.width = 1200; c1.height = 780;
-  c2.width = 1200; c2.height = 780;
-  ctx1.fillStyle = '#c8d8a8'; ctx1.fillRect(0,0,1200,780);
-  ctx1.fillStyle = '#e74c3c'; ctx1.font = 'bold 20px sans-serif'; ctx1.textAlign='center';
-  ctx1.fillText('Kart kunne ikke lastes inn', 600, 390);
-  ctx2.fillStyle = '#c8d8a8'; ctx2.fillRect(0,0,1200,780);
+  c1.width = 1200; c1.height = 780; c2.width = 1200; c2.height = 780;
+  [ctx1, ctx2].forEach(ctx => {
+    ctx.fillStyle = '#dde8d0'; ctx.fillRect(0,0,1200,780);
+    ctx.fillStyle = '#666'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Kartet lastes... prøv å laste siden på nytt', 600, 390);
+  });
 };
 mapImg.src = MAP_URL;
 
 function getPos(canvas, e) {
   const r = canvas.getBoundingClientRect();
   const src = e.touches ? e.touches[0] : e;
-  return {
-    x: (src.clientX - r.left) * (canvas.width / r.width),
-    y: (src.clientY - r.top) * (canvas.height / r.height)
-  };
+  return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
 }
 
 // Canvas 1 — red
-function startDraw1(e) {
-  e.preventDefault();
-  drawing1 = true;
-  history1.push(ctx1.getImageData(0,0,c1.width,c1.height));
-  const p = getPos(c1, e);
-  ctx1.beginPath(); ctx1.moveTo(p.x, p.y);
-  ctx1.strokeStyle = '#e74c3c'; ctx1.lineWidth = 4;
-  ctx1.lineCap = 'round'; ctx1.lineJoin = 'round';
-}
-function moveDraw1(e) {
-  e.preventDefault();
-  if (!drawing1) return;
-  const p = getPos(c1, e);
-  ctx1.lineTo(p.x, p.y); ctx1.stroke();
-}
-function endDraw1() { drawing1 = false; ctx1.beginPath(); }
+c1.addEventListener('mousedown', e => { drawing1=true; history1.push(ctx1.getImageData(0,0,c1.width,c1.height)); const p=getPos(c1,e); ctx1.beginPath(); ctx1.moveTo(p.x,p.y); ctx1.strokeStyle='#C0392B'; ctx1.lineWidth=5; ctx1.lineCap='round'; ctx1.lineJoin='round'; });
+c1.addEventListener('mousemove', e => { if(!drawing1) return; const p=getPos(c1,e); ctx1.lineTo(p.x,p.y); ctx1.stroke(); });
+c1.addEventListener('mouseup', () => { drawing1=false; ctx1.beginPath(); });
+c1.addEventListener('mouseleave', () => { drawing1=false; });
+c1.addEventListener('touchstart', e => { e.preventDefault(); drawing1=true; history1.push(ctx1.getImageData(0,0,c1.width,c1.height)); const p=getPos(c1,e); ctx1.beginPath(); ctx1.moveTo(p.x,p.y); ctx1.strokeStyle='#C0392B'; ctx1.lineWidth=5; ctx1.lineCap='round'; ctx1.lineJoin='round'; }, {passive:false});
+c1.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing1) return; const p=getPos(c1,e); ctx1.lineTo(p.x,p.y); ctx1.stroke(); }, {passive:false});
+c1.addEventListener('touchend', () => { drawing1=false; });
 
-c1.addEventListener('mousedown', startDraw1);
-c1.addEventListener('mousemove', moveDraw1);
-c1.addEventListener('mouseup', endDraw1);
-c1.addEventListener('mouseleave', endDraw1);
-c1.addEventListener('touchstart', startDraw1, {passive:false});
-c1.addEventListener('touchmove', moveDraw1, {passive:false});
-c1.addEventListener('touchend', endDraw1);
+// Canvas 2 — green
+c2.addEventListener('mousedown', e => { drawing2=true; history2.push(ctx2.getImageData(0,0,c2.width,c2.height)); const p=getPos(c2,e); ctx2.beginPath(); ctx2.moveTo(p.x,p.y); ctx2.strokeStyle='#3A7D44'; ctx2.lineWidth=5; ctx2.lineCap='round'; ctx2.lineJoin='round'; });
+c2.addEventListener('mousemove', e => { if(!drawing2) return; const p=getPos(c2,e); ctx2.lineTo(p.x,p.y); ctx2.stroke(); });
+c2.addEventListener('mouseup', () => { drawing2=false; ctx2.beginPath(); });
+c2.addEventListener('mouseleave', () => { drawing2=false; });
+c2.addEventListener('touchstart', e => { e.preventDefault(); drawing2=true; history2.push(ctx2.getImageData(0,0,c2.width,c2.height)); const p=getPos(c2,e); ctx2.beginPath(); ctx2.moveTo(p.x,p.y); ctx2.strokeStyle='#3A7D44'; ctx2.lineWidth=5; ctx2.lineCap='round'; ctx2.lineJoin='round'; }, {passive:false});
+c2.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing2) return; const p=getPos(c2,e); ctx2.lineTo(p.x,p.y); ctx2.stroke(); }, {passive:false});
+c2.addEventListener('touchend', () => { drawing2=false; });
 
-// Canvas 2 — orange
-function startDraw2(e) {
-  e.preventDefault();
-  drawing2 = true;
-  history2.push(ctx2.getImageData(0,0,c2.width,c2.height));
-  const p = getPos(c2, e);
-  ctx2.beginPath(); ctx2.moveTo(p.x, p.y);
-  ctx2.strokeStyle = '#e67e22'; ctx2.lineWidth = 4;
-  ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
-}
-function moveDraw2(e) {
-  e.preventDefault();
-  if (!drawing2) return;
-  const p = getPos(c2, e);
-  ctx2.lineTo(p.x, p.y); ctx2.stroke();
-}
-function endDraw2() { drawing2 = false; ctx2.beginPath(); }
-
-c2.addEventListener('mousedown', startDraw2);
-c2.addEventListener('mousemove', moveDraw2);
-c2.addEventListener('mouseup', endDraw2);
-c2.addEventListener('mouseleave', endDraw2);
-c2.addEventListener('touchstart', startDraw2, {passive:false});
-c2.addEventListener('touchmove', moveDraw2, {passive:false});
-c2.addEventListener('touchend', endDraw2);
-
-function undoCanvas1() { if (history1.length > 0) ctx1.putImageData(history1.pop(), 0, 0); }
-function undoCanvas2() { if (history2.length > 0) ctx2.putImageData(history2.pop(), 0, 0); }
-function clearCanvas1() { history1 = []; ctx1.clearRect(0,0,c1.width,c1.height); ctx1.drawImage(mapImg,0,0); }
-function clearCanvas2() { history2 = []; ctx2.clearRect(0,0,c2.width,c2.height); ctx2.drawImage(mapImg,0,0); }
+function undoCanvas1() { if(history1.length>0) ctx1.putImageData(history1.pop(),0,0); }
+function undoCanvas2() { if(history2.length>0) ctx2.putImageData(history2.pop(),0,0); }
+function clearCanvas1() { history1=[]; ctx1.clearRect(0,0,c1.width,c1.height); if(mapImg.complete) ctx1.drawImage(mapImg,0,0); }
+function clearCanvas2() { history2=[]; ctx2.clearRect(0,0,c2.width,c2.height); if(mapImg.complete) ctx2.drawImage(mapImg,0,0); }
 
 // ── SUBMIT ──
 async function submitAll() {
@@ -584,17 +540,24 @@ async function submitAll() {
     survey
   };
 
+  const btn = document.querySelector('.btn-green');
+  btn.textContent = 'Sender inn...';
+  btn.disabled = true;
+
   try {
     const r = await fetch('/api/submit', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload)
     });
+    if (!r.ok) throw new Error('Server error: ' + r.status);
     const d = await r.json();
-    document.getElementById('done-pid').textContent = 'Deltaker-ID: ' + (d.pid || pid);
+    document.getElementById('done-pid').textContent = 'Deltaker-ID: ' + (d.pid || pid || 'ukjent');
     goStep(5);
   } catch(e) {
-    alert('Noe gikk galt ved innsending. Prøv igjen eller kontakt odinbo@stud.ntnu.no');
+    btn.textContent = '✓ Send inn svarene mine';
+    btn.disabled = false;
+    alert('Noe gikk galt ved innsending. Feilmelding: ' + e.message + '\n\nPrøv igjen eller kontakt odinbo@stud.ntnu.no');
   }
 }
 </script>
