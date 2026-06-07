@@ -462,25 +462,33 @@ function closeFullscreen() { document.getElementById('terrain-fs').classList.rem
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
 
 // CANVAS
-const mapImg = new Image();
-mapImg.crossOrigin = 'anonymous';
 const c1 = document.getElementById('canvas1');
 const ctx1 = c1.getContext('2d');
 const c2 = document.getElementById('canvas2');
 const ctx2 = c2.getContext('2d');
 let history1=[], history2=[], drawing1=false, drawing2=false;
 
-mapImg.onload = function() {
-  c1.width = mapImg.naturalWidth; c1.height = mapImg.naturalHeight;
-  c2.width = mapImg.naturalWidth; c2.height = mapImg.naturalHeight;
-  ctx1.drawImage(mapImg,0,0);
-  ctx2.drawImage(mapImg,0,0);
-};
-mapImg.onerror = function() {
-  c1.width=1200; c1.height=780; c2.width=1200; c2.height=780;
-  [ctx1,ctx2].forEach(ctx => { ctx.fillStyle='#dde8d0'; ctx.fillRect(0,0,1200,780); ctx.fillStyle='#666'; ctx.font='bold 16px sans-serif'; ctx.textAlign='center'; ctx.fillText('Kartet lastes... prøv å laste siden på nytt',600,390); });
-};
-mapImg.src = MAP_URL;
+function loadMap() {
+  const mapImg = new Image();
+  mapImg.onload = function() {
+    c1.width = mapImg.naturalWidth; c1.height = mapImg.naturalHeight;
+    c2.width = mapImg.naturalWidth; c2.height = mapImg.naturalHeight;
+    ctx1.drawImage(mapImg, 0, 0);
+    ctx2.drawImage(mapImg, 0, 0);
+    window._mapImg = mapImg;
+  };
+  mapImg.onerror = function() {
+    console.error('Kart kunne ikke lastes fra:', MAP_URL);
+    c1.width=1200; c1.height=780; c2.width=1200; c2.height=780;
+    [ctx1,ctx2].forEach(ctx => {
+      ctx.fillStyle='#dde8d0'; ctx.fillRect(0,0,1200,780);
+      ctx.fillStyle='#555'; ctx.font='bold 18px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('Kartet kunne ikke lastes — prøv å laste siden på nytt', 600, 390);
+    });
+  };
+  mapImg.src = MAP_URL + '?t=' + Date.now();
+}
+window.addEventListener('DOMContentLoaded', loadMap);
 
 function getPos(canvas, e) {
   const r = canvas.getBoundingClientRect();
@@ -506,8 +514,8 @@ c2.addEventListener('touchend', ()=>{ drawing2=false; });
 
 function undoCanvas1() { if(history1.length>0) ctx1.putImageData(history1.pop(),0,0); }
 function undoCanvas2() { if(history2.length>0) ctx2.putImageData(history2.pop(),0,0); }
-function clearCanvas1() { history1=[]; ctx1.clearRect(0,0,c1.width,c1.height); if(mapImg.complete&&mapImg.naturalWidth>0) ctx1.drawImage(mapImg,0,0); }
-function clearCanvas2() { history2=[]; ctx2.clearRect(0,0,c2.width,c2.height); if(mapImg.complete&&mapImg.naturalWidth>0) ctx2.drawImage(mapImg,0,0); }
+function clearCanvas1() { history1=[]; ctx1.clearRect(0,0,c1.width,c1.height); if(window._mapImg) ctx1.drawImage(window._mapImg,0,0); }
+function clearCanvas2() { history2=[]; ctx2.clearRect(0,0,c2.width,c2.height); if(window._mapImg) ctx2.drawImage(window._mapImg,0,0); }
 
 async function submitAll() {
   const required = ['s1','s2','s3','s4','s5','s6','s7'];
