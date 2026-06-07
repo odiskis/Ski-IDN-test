@@ -4,117 +4,138 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin · Brukertest Analyse</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy:#0d1b2a; --blue:#1b4f8a; --accent:#2e86c1;
-    --ice:#eaf4fb; --green:#1e8449; --orange:#d35400;
-    --white:#fff; --muted:#6b7280; --border:#e2e8f0;
+    --navy:#1D2B3A; --blue:#2C5282; --accent:#4A90D9;
+    --green:#3A7D44; --orange:#E07B39; --red:#C0392B;
+    --white:#fff; --muted:#7A8C9E; --border:#D9E4EE;
+    --card:#F4F8FB; --bg:#EBF2F8;
   }
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:'DM Sans',sans-serif; background:#f0f4f8; color:var(--navy); }
+  body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:var(--navy); }
   .topbar { background:var(--navy); color:white; padding:16px 32px; display:flex; align-items:center; justify-content:space-between; }
-  .topbar h1 { font-family:'DM Serif Display',serif; font-size:1.2rem; }
+  .topbar h1 { font-weight:700; font-size:1.2rem; }
   .topbar span { font-size:0.8rem; color:#8ab4d4; }
-  .container { max-width:1100px; margin:0 auto; padding:40px 20px; }
+  .container { max-width:1200px; margin:0 auto; padding:40px 24px; }
   .login-box { max-width:380px; margin:100px auto; background:white; border-radius:16px; padding:40px; border:1px solid var(--border); box-shadow:0 4px 20px rgba(0,0,0,0.06); text-align:center; }
-  .login-box h2 { font-family:'DM Serif Display',serif; font-size:1.6rem; margin-bottom:8px; }
+  .login-box h2 { font-weight:700; font-size:1.6rem; margin-bottom:8px; }
   .login-box p { color:var(--muted); font-size:0.9rem; margin-bottom:24px; }
-  .login-box input { width:100%; border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-family:'DM Sans',sans-serif; font-size:0.95rem; margin-bottom:14px; }
-  .btn { padding:12px 28px; border-radius:10px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; font-size:0.95rem; transition:all 0.2s; }
-  .btn-primary { background:var(--accent); color:white; width:100%; }
+  .login-box input { width:100%; border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; margin-bottom:14px; background:var(--card); }
+  .btn { padding:10px 22px; border-radius:10px; border:none; font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; cursor:pointer; font-size:0.9rem; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; }
+  .btn-primary { background:var(--accent); color:white; width:100%; justify-content:center; }
   .btn-primary:hover { background:var(--blue); }
-  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+  .btn-danger { background:#fee2e2; color:var(--red); border:1px solid #fca5a5; }
+  .btn-danger:hover { background:#fca5a5; }
+  .btn-outline { background:white; color:var(--navy); border:1px solid var(--border); }
+  .btn-outline:hover { background:var(--card); border-color:var(--accent); }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
   .stat-card { background:white; border-radius:14px; padding:24px; border:1px solid var(--border); text-align:center; }
-  .stat-num { font-family:'DM Serif Display',serif; font-size:2.4rem; color:var(--accent); }
+  .stat-num { font-weight:700; font-size:2.4rem; color:var(--accent); }
   .stat-label { font-size:0.8rem; color:var(--muted); margin-top:4px; }
+
   .section { background:white; border-radius:16px; padding:28px; margin-bottom:24px; border:1px solid var(--border); }
-  .section-title { font-family:'DM Serif Display',serif; font-size:1.4rem; margin-bottom:20px; color:var(--navy); }
-  .bar-wrap { margin-bottom:16px; }
-  .bar-label { font-size:0.85rem; color:var(--navy); margin-bottom:5px; display:flex; justify-content:space-between; }
-  .bar-track { background:#f0f4f8; border-radius:99px; height:12px; overflow:hidden; }
-  .bar-fill { height:12px; border-radius:99px; background:var(--accent); transition:width 0.6s ease; }
-  .route-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
-  .route-card { border:1px solid var(--border); border-radius:12px; overflow:hidden; background:white; }
-  .route-card img { width:100%; display:block; }
-  .route-meta { padding:12px 14px; font-size:0.82rem; color:var(--muted); background:#fafafa; }
-  .route-meta strong { color:var(--navy); }
-  .changed-badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.75rem; font-weight:600; margin-left:6px; }
-  .badge-ja { background:#d5f5e3; color:#1e8449; }
-  .badge-delvis { background:#fef9c3; color:#b45309; }
-  .badge-nei { background:#fee2e2; color:#b91c1c; }
-  .download-row { display:flex; gap:8px; padding:10px 14px; background:#f8fafc; border-top:1px solid var(--border); }
-  .dl-btn { flex:1; padding:7px 10px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; text-align:center; transition:all 0.2s; }
-  .dl-btn.red { color:#e74c3c; border-color:#e74c3c; }
-  .dl-btn.red:hover { background:#fff0f0; }
-  .dl-btn.orange { color:#e67e22; border-color:#e67e22; }
-  .dl-btn.orange:hover { background:#fff8f0; }
-  .dl-btn.both { color:var(--accent); border-color:var(--accent); }
-  .dl-btn.both:hover { background:var(--ice); }
-  .resp-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-  .resp-table th { background:#f8fafc; padding:10px 12px; text-align:left; font-weight:600; border-bottom:2px solid var(--border); }
-  .resp-table td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
-  .resp-table tr:hover { background:#f8fafc; }
-  .quote { background:var(--ice); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; margin-bottom:10px; font-size:0.88rem; line-height:1.6; color:var(--navy); }
-  .quote .qmeta { font-size:0.75rem; color:var(--muted); margin-top:4px; }
-  .export-btn { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; border-radius:10px; border:1px solid var(--border); background:white; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500; margin-right:10px; transition:all 0.2s; }
-  .export-btn:hover { background:var(--ice); border-color:var(--accent); }
-  .likert-row { display:flex; gap:4px; align-items:center; margin-bottom:8px; }
-  .likert-label { width:280px; font-size:0.83rem; color:var(--navy); flex-shrink:0; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .section-title { font-weight:700; font-size:1.3rem; color:var(--navy); }
+
+  .toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
+
+  .likert-row { display:flex; gap:4px; align-items:center; margin-bottom:10px; }
+  .likert-label { width:300px; font-size:0.83rem; color:var(--navy); flex-shrink:0; }
   .likert-bars { display:flex; gap:3px; flex:1; }
-  .likert-bar { flex:1; background:#f0f4f8; border-radius:4px; height:28px; position:relative; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:600; color:var(--muted); }
-  .likert-bar .fill { position:absolute; bottom:0; left:0; right:0; border-radius:4px; background:var(--accent); opacity:0.7; }
-  .likert-avg { width:48px; text-align:right; font-size:0.82rem; color:var(--accent); font-weight:600; flex-shrink:0; }
-  .maps-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:6px 10px; }
-  .before-label { background:#fff0f0; color:#e74c3c; }
-  .after-label { background:#fff8f0; color:#e67e22; }
+  .likert-bar { flex:1; background:var(--card); border-radius:4px; height:30px; position:relative; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:600; color:var(--muted); }
+  .likert-bar .fill { position:absolute; bottom:0; left:0; right:0; border-radius:4px; background:var(--accent); opacity:0.65; }
+  .likert-avg { width:48px; text-align:right; font-size:0.85rem; color:var(--accent); font-weight:700; flex-shrink:0; }
+
+  .route-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:20px; }
+  .route-card { border:1px solid var(--border); border-radius:12px; overflow:hidden; background:white; }
+  .route-maps { display:grid; grid-template-columns:1fr 1fr; }
+  .route-maps img { width:100%; display:block; }
+  .map-label { padding:5px 10px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .map-label.before { background:#FFF0F0; color:var(--red); }
+  .map-label.after { background:#F0FFF4; color:var(--green); }
+  .route-meta { padding:10px 14px; font-size:0.82rem; color:var(--muted); background:var(--card); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+  .route-actions { padding:10px 14px; display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border); }
+  .dl-btn { flex:1; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:600; text-align:center; transition:all 0.2s; min-width:80px; }
+  .dl-btn.red { color:var(--red); border-color:#fca5a5; }
+  .dl-btn.red:hover { background:#fff0f0; }
+  .dl-btn.green { color:var(--green); border-color:#86efac; }
+  .dl-btn.green:hover { background:#f0fff4; }
+  .dl-btn.blue { color:var(--accent); border-color:#93c5fd; }
+  .dl-btn.blue:hover { background:var(--card); }
+  .dl-btn.del { color:var(--red); border-color:#fca5a5; background:#fff0f0; }
+  .dl-btn.del:hover { background:#fee2e2; }
+
+  .changed-badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.75rem; font-weight:600; }
+  .badge-ja { background:#d5f5e3; color:var(--green); }
+  .badge-delvis { background:#fef9c3; color:#b45309; }
+  .badge-nei { background:#fee2e2; color:var(--red); }
+
+  .quote { background:var(--card); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; margin-bottom:10px; font-size:0.88rem; line-height:1.6; color:var(--navy); }
+  .quote .qmeta { font-size:0.75rem; color:var(--muted); margin-top:4px; }
+
+  .resp-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+  .resp-table th { background:var(--card); padding:10px 12px; text-align:left; font-weight:600; border-bottom:2px solid var(--border); }
+  .resp-table td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .resp-table tr:hover { background:var(--card); }
+
+  .danger-zone { background:#fff0f0; border:1px solid #fca5a5; border-radius:12px; padding:20px 24px; margin-bottom:24px; }
+  .danger-zone h3 { font-weight:700; color:var(--red); margin-bottom:8px; }
+  .danger-zone p { font-size:0.88rem; color:#7f1d1d; margin-bottom:14px; }
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <h1>Brukertest Analyse · NTNU 2026</h1>
   <span id="last-updated"></span>
 </div>
 
 <div class="container" id="main" style="display:none">
-
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
     <div>
-      <h2 style="font-family:'DM Serif Display',serif;font-size:1.8rem;">Oversikt</h2>
+      <h2 style="font-weight:700;font-size:1.8rem;">Oversikt</h2>
       <p style="color:var(--muted);font-size:0.9rem;">Odin Bård Østvedt · Masteroppgave NTNU 2026</p>
     </div>
-    <div>
-      <button class="export-btn" onclick="exportCSV()">📥 Eksporter CSV</button>
-      <button class="export-btn" onclick="downloadAllMaps()">🗺 Last ned alle kart</button>
-      <button class="export-btn" onclick="location.reload()">🔄 Oppdater</button>
+    <div class="toolbar">
+      <button class="btn btn-outline" onclick="exportCSV()">📥 Eksporter CSV</button>
+      <button class="btn btn-outline" onclick="downloadAllMaps()">🗺 Last ned alle kart</button>
+      <button class="btn btn-outline" onclick="location.reload()">🔄 Oppdater</button>
     </div>
   </div>
 
   <div class="stats-grid" id="stats-grid"></div>
 
+  <!-- DANGER ZONE -->
+  <div class="danger-zone">
+    <h3>⚠️ Administrasjon av data</h3>
+    <p>Her kan du slette enkeltbesvarelser eller alle data. Dette kan ikke angres.</p>
+    <button class="btn btn-danger" onclick="deleteAll()">🗑 Slett alle besvarelser</button>
+  </div>
+
   <div class="section">
-    <div class="section-title">Surveyresultater — gjennomsnitt</div>
+    <div class="section-title" style="margin-bottom:20px;">Surveyresultater — gjennomsnitt</div>
     <div id="likert-section"></div>
   </div>
 
   <div class="section">
-    <div class="section-title">Rutekart — før og etter terrengmodellen</div>
-    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:20px;">Rød = før terrengmodellen · Oransje = etter terrengmodellen</p>
+    <div class="section-header">
+      <div class="section-title">Rutekart — før og etter</div>
+    </div>
+    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:20px;">Rød = før terrengmodellen · Grønn = etter terrengmodellen</p>
     <div id="change-summary" style="margin-bottom:20px;"></div>
     <div class="route-grid" id="route-grid"></div>
   </div>
 
   <div class="section">
-    <div class="section-title">Åpne svar</div>
+    <div class="section-title" style="margin-bottom:20px;">Åpne svar</div>
     <div id="open-answers"></div>
   </div>
 
   <div class="section">
-    <div class="section-title">Begrunnelser — rute før/etter</div>
+    <div class="section-title" style="margin-bottom:20px;">Begrunnelser</div>
     <div id="reasons-table"></div>
   </div>
-
 </div>
 
 <div id="login-wrap">
@@ -123,13 +144,12 @@
     <p>Skriv inn passordet for å se analysen</p>
     <input type="password" id="pw-input" placeholder="Passord" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="btn btn-primary" onclick="doLogin()">Logg inn</button>
-    <p id="login-err" style="color:#e74c3c;font-size:0.82rem;margin-top:10px;"></p>
+    <p id="login-err" style="color:var(--red);font-size:0.82rem;margin-top:10px;"></p>
   </div>
 </div>
 
 <script>
-let pw = '';
-let allData = [];
+let pw = '', allData = [];
 
 async function doLogin() {
   pw = document.getElementById('pw-input').value;
@@ -142,7 +162,7 @@ async function doLogin() {
     document.getElementById('last-updated').textContent = 'Oppdatert: ' + new Date().toLocaleTimeString('no');
     render(allData);
   } catch(e) {
-    document.getElementById('login-err').textContent = 'Kunne ikke koble til serveren.';
+    document.getElementById('login-err').textContent = 'Kunne ikke koble til.';
   }
 }
 
@@ -157,45 +177,38 @@ function render(data) {
 function renderStats(data) {
   const n = data.length;
   const changed = data.filter(d => d.route_changed === 'ja').length;
-  const avgS6 = avg(data, 's6');
-  const avgS7 = avg(data, 's7');
+  const avgS6 = avg(data, 's6'), avgS7 = avg(data, 's7');
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">Deltakere totalt</div></div>
-    <div class="stat-card"><div class="stat-num">${changed}</div><div class="stat-label">Endret ruten (ja)</div></div>
+    <div class="stat-card"><div class="stat-num">${changed}</div><div class="stat-label">Endret ruten</div></div>
     <div class="stat-card"><div class="stat-num">${avgS6.toFixed(1)}/5</div><div class="stat-label">Snitt: bedre enn kart</div></div>
-    <div class="stat-card"><div class="stat-num">${avgS7.toFixed(1)}/5</div><div class="stat-label">Snitt: ville brukt igjen</div></div>
-  `;
+    <div class="stat-card"><div class="stat-num">${avgS7.toFixed(1)}/5</div><div class="stat-label">Snitt: ville brukt igjen</div></div>`;
 }
 
 function avg(data, key) {
   const vals = data.map(d => parseInt(d.survey?.[key])).filter(v => !isNaN(v));
-  return vals.length ? vals.reduce((a,b) => a+b,0)/vals.length : 0;
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 }
 
 function renderLikert(data) {
-  const questions = {
-    s1: 'Jeg følte meg til stede i det digitale terrenget',
-    s2: 'Terrenget føltes realistisk nok',
-    s3: 'Bedre forståelse av snøskredfaren enn kartet alene',
-    s4: 'Hjalp meg å vurdere egne ferdigheter',
-    s5: 'Påvirket hvordan jeg tenker på rutevalg og sikkerhet',
-    s6: 'Bedre enn 2D-kart for å forstå toppturterreng',
-    s7: 'Ville brukt verktøyet igjen',
+  const qs = {
+    s1:'Jeg følte meg til stede i det digitale terrenget',
+    s2:'Terrenget føltes realistisk nok',
+    s3:'Bedre forståelse av snøskredfaren enn kartet alene',
+    s4:'Hjalp meg å vurdere egne ferdigheter',
+    s5:'Påvirket hvordan jeg tenker på rutevalg og sikkerhet',
+    s6:'Bedre enn 2D-kart for å forstå toppturterreng',
+    s7:'Ville brukt verktøyet igjen',
   };
   let html = '';
-  for (const [key, label] of Object.entries(questions)) {
+  for (const [key, label] of Object.entries(qs)) {
     const vals = data.map(d => parseInt(d.survey?.[key])).filter(v => !isNaN(v));
-    const counts = [1,2,3,4,5].map(v => vals.filter(x => x === v).length);
-    const maxCount = Math.max(...counts, 1);
+    const counts = [1,2,3,4,5].map(v => vals.filter(x=>x===v).length);
+    const maxC = Math.max(...counts, 1);
     const mean = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '-';
     html += `<div class="likert-row">
       <div class="likert-label">${label}</div>
-      <div class="likert-bars">
-        ${counts.map((c,i) => `<div class="likert-bar" title="${i+1}: ${c} svar">
-          <div class="fill" style="height:${(c/maxCount)*100}%"></div>
-          <span style="position:relative;z-index:1">${i+1}</span>
-        </div>`).join('')}
-      </div>
+      <div class="likert-bars">${counts.map((c,i)=>`<div class="likert-bar" title="${i+1}: ${c} svar"><div class="fill" style="height:${(c/maxC)*100}%"></div><span style="position:relative;z-index:1">${i+1}</span></div>`).join('')}</div>
       <div class="likert-avg">${mean}</div>
     </div>`;
   }
@@ -203,100 +216,113 @@ function renderLikert(data) {
 }
 
 function renderRoutes(data) {
-  const counts = {ja:0, delvis:0, nei:0};
-  data.forEach(d => { if (d.route_changed) counts[d.route_changed] = (counts[d.route_changed]||0)+1; });
+  const counts = {ja:0,delvis:0,nei:0};
+  data.forEach(d => { if(d.route_changed) counts[d.route_changed]=(counts[d.route_changed]||0)+1; });
   const total = data.length || 1;
+  document.getElementById('change-summary').innerHTML = `<div style="display:flex;gap:14px;flex-wrap:wrap">
+    ${Object.entries(counts).map(([k,v])=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center">
+      <div style="font-size:1.6rem;font-weight:700;color:var(--navy)">${v}</div>
+      <div style="font-size:0.8rem;color:var(--muted)">${k==='ja'?'Endret ruten':k==='delvis'?'Delvis endret':'Samme rute'}</div>
+      <div style="font-size:0.75rem;color:var(--accent)">${Math.round(v/total*100)}%</div>
+    </div>`).join('')}
+  </div>`;
 
-  document.getElementById('change-summary').innerHTML = `
-    <div style="display:flex;gap:16px;flex-wrap:wrap">
-      ${Object.entries(counts).map(([k,v]) => `
-        <div style="background:var(--ice);border-radius:10px;padding:14px 20px;text-align:center">
-          <div style="font-size:1.6rem;font-weight:700;color:var(--navy)">${v}</div>
-          <div style="font-size:0.8rem;color:var(--muted)">${k==='ja'?'Endret ruten':k==='delvis'?'Delvis endret':'Samme rute'}</div>
-          <div style="font-size:0.75rem;color:var(--accent)">${Math.round(v/total*100)}%</div>
-        </div>`).join('')}
-    </div>`;
-
-  const html = data.map((d, idx) => {
+  document.getElementById('route-grid').innerHTML = data.length ? data.map(d => {
     const badge = d.route_changed==='ja'?'badge-ja':d.route_changed==='delvis'?'badge-delvis':'badge-nei';
     const badgeText = d.route_changed==='ja'?'Endret':d.route_changed==='delvis'?'Delvis':'Samme';
     return `<div class="route-card">
-      <div style="display:grid;grid-template-columns:1fr 1fr">
+      <div class="route-maps">
         <div>
-          <div class="maps-label before-label">FØR (rød)</div>
-          ${d.route_before ? `<img src="${d.route_before}" alt="Rute før">` : '<div style="height:140px;background:#f0f4f8;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--muted)">Ingen tegning</div>'}
+          <div class="map-label before">FØR (rød)</div>
+          ${d.route_before?`<img src="${d.route_before}" alt="Før">`:'<div style="height:120px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--muted)">Ingen tegning</div>'}
         </div>
         <div>
-          <div class="maps-label after-label">ETTER (oransje)</div>
-          ${d.route_after ? `<img src="${d.route_after}" alt="Rute etter">` : '<div style="height:140px;background:#f0f4f8;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--muted)">Ingen tegning</div>'}
+          <div class="map-label after">ETTER (grønn)</div>
+          ${d.route_after?`<img src="${d.route_after}" alt="Etter">`:'<div style="height:120px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--muted)">Ingen tegning</div>'}
         </div>
       </div>
       <div class="route-meta">
-        <strong>ID: ${d.pid}</strong>
-        <span class="changed-badge ${badge}">${badgeText}</span>
-        · ${d.experience||'-'}
-        · ${d.timestamp?d.timestamp.substring(0,10):''}
+        <span><strong>ID: ${d.pid}</strong> <span class="changed-badge ${badge}">${badgeText}</span></span>
+        <span>${d.experience||'-'} · ${d.timestamp?d.timestamp.substring(0,10):''}</span>
       </div>
-      <div class="download-row">
-        ${d.route_before ? `<button class="dl-btn red" onclick="downloadMap('${d.route_before}','rute_for_${d.pid}.png')">⬇ Last ned FØR</button>` : ''}
-        ${d.route_after ? `<button class="dl-btn orange" onclick="downloadMap('${d.route_after}','rute_etter_${d.pid}.png')">⬇ Last ned ETTER</button>` : ''}
-        ${d.route_before && d.route_after ? `<button class="dl-btn both" onclick="downloadBoth('${d.pid}','${d.route_before}','${d.route_after}')">⬇ Last ned begge</button>` : ''}
+      <div class="route-actions">
+        ${d.route_before?`<button class="dl-btn red" onclick="downloadMap('${d.route_before}','for_${d.pid}.png')">⬇ FØR</button>`:''}
+        ${d.route_after?`<button class="dl-btn green" onclick="downloadMap('${d.route_after}','etter_${d.pid}.png')">⬇ ETTER</button>`:''}
+        ${d.route_before&&d.route_after?`<button class="dl-btn blue" onclick="downloadCombined('${d.pid}','${d.route_before}','${d.route_after}')">⬇ Kombinert</button>`:''}
+        <button class="dl-btn del" onclick="deleteEntry('${d.pid}')">🗑 Slett</button>
       </div>
     </div>`;
-  }).join('');
-  document.getElementById('route-grid').innerHTML = html || '<p style="color:var(--muted)">Ingen data ennå.</p>';
+  }).join('') : '<p style="color:var(--muted)">Ingen data ennå.</p>';
 }
 
 function downloadMap(dataUrl, filename) {
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = filename;
-  a.click();
+  const a = document.createElement('a'); a.href = dataUrl; a.download = filename; a.click();
 }
 
-function downloadBoth(pid, before, after) {
-  downloadMap(before, `rute_for_${pid}.png`);
-  setTimeout(() => downloadMap(after, `rute_etter_${pid}.png`), 300);
+function downloadCombined(pid, before, after) {
+  const canvas = document.createElement('canvas');
+  const imgB = new Image(), imgA = new Image();
+  imgB.onload = function() {
+    canvas.width = imgB.naturalWidth; canvas.height = imgB.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imgB, 0, 0);
+    imgA.onload = function() {
+      ctx.drawImage(imgA, 0, 0);
+      downloadMap(canvas.toDataURL('image/png'), `kombinert_${pid}.png`);
+    };
+    imgA.src = after;
+  };
+  imgB.src = before;
 }
 
 function downloadAllMaps() {
   allData.forEach((d, i) => {
     setTimeout(() => {
-      if (d.route_before) downloadMap(d.route_before, `rute_for_${d.pid}.png`);
-      if (d.route_after) setTimeout(() => downloadMap(d.route_after, `rute_etter_${d.pid}.png`), 300);
-    }, i * 700);
+      if(d.route_before) downloadMap(d.route_before, `for_${d.pid}.png`);
+      setTimeout(() => { if(d.route_after) downloadMap(d.route_after, `etter_${d.pid}.png`); }, 400);
+      setTimeout(() => { if(d.route_before&&d.route_after) downloadCombined(d.pid, d.route_before, d.route_after); }, 800);
+    }, i * 1200);
   });
 }
 
+async function deleteEntry(pid) {
+  if (!confirm(`Slette besvarelsen fra ${pid}? Dette kan ikke angres.`)) return;
+  try {
+    const r = await fetch(`/api/admin/delete/${pid}?pw=${encodeURIComponent(pw)}`, {method:'DELETE'});
+    if (!r.ok) { alert('Kunne ikke slette.'); return; }
+    allData = allData.filter(d => d.pid !== pid);
+    render(allData);
+  } catch(e) { alert('Feil ved sletting.'); }
+}
+
+async function deleteAll() {
+  if (!confirm('Slette ALLE besvarelser? Dette kan ikke angres.')) return;
+  if (!confirm('Er du helt sikker? All data slettes permanent.')) return;
+  try {
+    const r = await fetch(`/api/admin/delete-all?pw=${encodeURIComponent(pw)}`, {method:'DELETE'});
+    if (!r.ok) { alert('Kunne ikke slette.'); return; }
+    allData = [];
+    render(allData);
+  } catch(e) { alert('Feil ved sletting.'); }
+}
+
 function renderOpenAnswers(data) {
-  const questions = [
-    {key:'open1', label:'Mest verdifullt med opplevelsen'},
-    {key:'open2', label:'Hva overrasket deg mest'},
-    {key:'open3', label:'Andre kommentarer'},
-  ];
+  const qs = [{key:'open1',label:'Mest verdifullt'},{key:'open2',label:'Hva overrasket deg'},{key:'open3',label:'Andre kommentarer'}];
   let html = '';
-  for (const q of questions) {
-    const answers = data.map(d => ({text:d.survey?.[q.key], pid:d.pid, exp:d.experience})).filter(a => a.text && a.text.trim());
-    if (!answers.length) continue;
-    html += `<h4 style="font-size:0.85rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px">${q.label}</h4>`;
-    html += answers.map(a => `<div class="quote">${a.text}<div class="qmeta">ID: ${a.pid} · ${a.exp||'-'}</div></div>`).join('');
+  for (const q of qs) {
+    const answers = data.map(d=>({text:d.survey?.[q.key],pid:d.pid,exp:d.experience})).filter(a=>a.text&&a.text.trim());
+    if(!answers.length) continue;
+    html += `<h4 style="font-size:0.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">${q.label}</h4>`;
+    html += answers.map(a=>`<div class="quote">${a.text}<div class="qmeta">ID: ${a.pid} · ${a.exp||'-'}</div></div>`).join('');
   }
   document.getElementById('open-answers').innerHTML = html || '<p style="color:var(--muted)">Ingen åpne svar ennå.</p>';
 }
 
 function renderReasons(data) {
-  let html = `<table class="resp-table"><thead><tr>
-    <th>ID</th><th>Erfaring</th><th>Begrunnelse FØR</th><th>Begrunnelse ETTER</th><th>Endret?</th>
-  </tr></thead><tbody>`;
+  let html = `<table class="resp-table"><thead><tr><th>ID</th><th>Erfaring</th><th>Begrunnelse FØR</th><th>Begrunnelse ETTER</th><th>Endret?</th></tr></thead><tbody>`;
   data.forEach(d => {
     const badge = d.route_changed==='ja'?'badge-ja':d.route_changed==='delvis'?'badge-delvis':'badge-nei';
-    html += `<tr>
-      <td style="font-family:monospace;font-size:0.8rem">${d.pid}</td>
-      <td>${d.experience||'-'}</td>
-      <td>${d.route_before_reason||'-'}</td>
-      <td>${d.route_after_reason||'-'}</td>
-      <td><span class="changed-badge ${badge}">${d.route_changed||'-'}</span></td>
-    </tr>`;
+    html += `<tr><td style="font-family:monospace;font-size:0.8rem">${d.pid}</td><td>${d.experience||'-'}</td><td>${d.route_before_reason||'-'}</td><td>${d.route_after_reason||'-'}</td><td><span class="changed-badge ${badge}">${d.route_changed||'-'}</span></td></tr>`;
   });
   html += '</tbody></table>';
   document.getElementById('reasons-table').innerHTML = html;
@@ -305,13 +331,11 @@ function renderReasons(data) {
 function exportCSV() {
   const headers = ['pid','timestamp','experience','route_changed','route_before_reason','route_after_reason','s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'];
   const rows = allData.map(d => headers.map(h => {
-    if (['s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'].includes(h)) return `"${(d.survey?.[h]||'').replace(/"/g,'""')}"`;
-    return `"${(d[h]||'').toString().replace(/"/g,'""')}"`;
+    const v = ['s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'].includes(h) ? (d.survey?.[h]||'') : (d[h]||'');
+    return `"${v.toString().replace(/"/g,'""')}"`;
   }).join(','));
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'brukertest_data.csv'; a.click();
+  const blob = new Blob([[headers.join(','),...rows].join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='brukertest_data.csv'; a.click();
 }
 </script>
 </body>
