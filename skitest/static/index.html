@@ -482,7 +482,8 @@ async function startTest() {
 
 function goStep(n) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById('step'+n).classList.add('active');
+  const el = document.getElementById('step'+n);
+  if (el) el.classList.add('active');
   document.querySelectorAll('.dot').forEach((d,i) => {
     d.classList.remove('active','done');
     if (i < n) d.classList.add('done');
