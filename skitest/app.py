@@ -92,21 +92,20 @@ def combined_map(pid):
         base = Image.new("RGBA", (1200, 780), (200, 220, 180, 255))
 
     def extract_strokes(data_url, base_size):
-        """Extract only the drawn strokes from a canvas PNG by removing the map background."""
+        """Extract strokes by making near-white pixels transparent using numpy for clean edges."""
         b64 = data_url.split(",")[1] if "," in data_url else data_url
         img_bytes = base64.b64decode(b64)
         img = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
         img = img.resize(base_size, Image.LANCZOS)
-        pixels = img.load()
-        w, h = img.size
-        # Make white/near-white pixels transparent so only strokes show
-        for y in range(h):
-            for x in range(w):
-                r, g, b, a = pixels[x, y]
-                brightness = (r + g + b) / 3
-                if brightness > 200:
-                    pixels[x, y] = (r, g, b, 0)
-        return img
+        import numpy as np
+        arr = np.array(img, dtype=np.float32)
+        r, g, b, a = arr[...,0], arr[...,1], arr[...,2], arr[...,3]
+        brightness = (r + g + b) / 3.0
+        # Alpha = 0 where brightness > 220, full alpha where brightness < 180
+        # Smooth transition between 180 and 220
+        new_alpha = np.clip((220 - brightness) / 40.0, 0, 1) * 255
+        arr[...,3] = new_alpha
+        return Image.fromarray(arr.astype(np.uint8), 'RGBA')
 
     # Overlay route_before (red strokes)
     if entry.get("route_before"):
