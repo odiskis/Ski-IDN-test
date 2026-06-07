@@ -91,23 +91,38 @@ def combined_map(pid):
     else:
         base = Image.new("RGBA", (1200, 780), (200, 220, 180, 255))
 
-    # Overlay route_before (red strokes)
-    if entry.get("route_before"):
-        data_url = entry["route_before"]
+    def extract_strokes(data_url, base_size):
+        """Extract only the drawn strokes from a canvas PNG by removing the map background."""
         b64 = data_url.split(",")[1] if "," in data_url else data_url
         img_bytes = base64.b64decode(b64)
-        overlay = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
-        overlay = overlay.resize(base.size, Image.LANCZOS)
-        base = Image.alpha_composite(base, overlay)
+        img = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
+        img = img.resize(base_size, Image.LANCZOS)
+        pixels = img.load()
+        w, h = img.size
+        # Make white/near-white pixels transparent so only strokes show
+        for y in range(h):
+            for x in range(w):
+                r, g, b, a = pixels[x, y]
+                brightness = (r + g + b) / 3
+                if brightness > 200:
+                    pixels[x, y] = (r, g, b, 0)
+        return img
+
+    # Overlay route_before (red strokes)
+    if entry.get("route_before"):
+        try:
+            strokes = extract_strokes(entry["route_before"], base.size)
+            base = Image.alpha_composite(base, strokes)
+        except Exception as e:
+            print("Error overlaying before:", e)
 
     # Overlay route_after (green strokes)
     if entry.get("route_after"):
-        data_url = entry["route_after"]
-        b64 = data_url.split(",")[1] if "," in data_url else data_url
-        img_bytes = base64.b64decode(b64)
-        overlay = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
-        overlay = overlay.resize(base.size, Image.LANCZOS)
-        base = Image.alpha_composite(base, overlay)
+        try:
+            strokes = extract_strokes(entry["route_after"], base.size)
+            base = Image.alpha_composite(base, strokes)
+        except Exception as e:
+            print("Error overlaying after:", e)
 
     output = io.BytesIO()
     base.convert("RGB").save(output, format="PNG")
