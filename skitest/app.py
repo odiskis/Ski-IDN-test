@@ -31,6 +31,10 @@ def index():
 def admin():
     return send_from_directory("static", "admin.html")
 
+@app.route("/kart.png")
+def kart():
+    return send_from_directory(".", "kart.png")
+
 @app.route("/api/start", methods=["POST"])
 def start_session():
     participant_id = str(uuid.uuid4())[:8]
@@ -69,8 +73,7 @@ def delete_entry(pid):
     pw = request.args.get("pw", "")
     if not check_pw(pw):
         return jsonify({"error": "Unauthorized"}), 401
-    responses = load_data()
-    responses = [r for r in responses if r.get("pid") != pid]
+    responses = [r for r in load_data() if r.get("pid") != pid]
     save_data(responses)
     return jsonify({"ok": True})
 
