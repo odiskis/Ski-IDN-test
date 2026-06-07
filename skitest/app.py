@@ -92,20 +92,24 @@ def combined_map(pid):
         base = Image.new("RGBA", (1200, 780), (200, 220, 180, 255))
 
     def extract_strokes(data_url, base_size):
-        """Extract strokes by making near-white pixels transparent using numpy for clean edges."""
+        """Extract strokes by making near-white pixels transparent."""
         b64 = data_url.split(",")[1] if "," in data_url else data_url
         img_bytes = base64.b64decode(b64)
         img = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
         img = img.resize(base_size, Image.LANCZOS)
-        import numpy as np
-        arr = np.array(img, dtype=np.float32)
-        r, g, b, a = arr[...,0], arr[...,1], arr[...,2], arr[...,3]
-        brightness = (r + g + b) / 3.0
-        # Alpha = 0 where brightness > 220, full alpha where brightness < 180
-        # Smooth transition between 180 and 220
-        new_alpha = np.clip((220 - brightness) / 40.0, 0, 1) * 255
-        arr[...,3] = new_alpha
-        return Image.fromarray(arr.astype(np.uint8), 'RGBA')
+        data = img.getdata()
+        new_data = []
+        for r, g, b, a in data:
+            brightness = (r + g + b) / 3
+            if brightness > 220:
+                new_data.append((r, g, b, 0))
+            elif brightness > 180:
+                alpha = int((220 - brightness) / 40 * 255)
+                new_data.append((r, g, b, alpha))
+            else:
+                new_data.append((r, g, b, 255))
+        img.putdata(new_data)
+        return img
 
     # Overlay route_before (red strokes)
     if entry.get("route_before"):
