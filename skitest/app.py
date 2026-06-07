@@ -8,6 +8,8 @@ app.secret_key = os.environ.get("SECRET_KEY", "skitest-ntnu-2026-odin")
 DATA_FILE = "data/responses.json"
 os.makedirs("data", exist_ok=True)
 
+ADMIN_PW_HASH = hashlib.sha256(b"ntnu2026odin").hexdigest()
+
 def load_data():
     if not os.path.exists(DATA_FILE):
         return []
@@ -17,6 +19,9 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+def check_pw(pw):
+    return hashlib.sha256(pw.encode()).hexdigest() == ADMIN_PW_HASH
 
 @app.route("/")
 def index():
@@ -55,9 +60,27 @@ def submit():
 @app.route("/api/admin/data", methods=["GET"])
 def admin_data():
     pw = request.args.get("pw", "")
-    if hashlib.sha256(pw.encode()).hexdigest() != hashlib.sha256(b"ntnu2026odin").hexdigest():
+    if not check_pw(pw):
         return jsonify({"error": "Unauthorized"}), 401
     return jsonify(load_data())
+
+@app.route("/api/admin/delete/<pid>", methods=["DELETE"])
+def delete_entry(pid):
+    pw = request.args.get("pw", "")
+    if not check_pw(pw):
+        return jsonify({"error": "Unauthorized"}), 401
+    responses = load_data()
+    responses = [r for r in responses if r.get("pid") != pid]
+    save_data(responses)
+    return jsonify({"ok": True})
+
+@app.route("/api/admin/delete-all", methods=["DELETE"])
+def delete_all():
+    pw = request.args.get("pw", "")
+    if not check_pw(pw):
+        return jsonify({"error": "Unauthorized"}), 401
+    save_data([])
+    return jsonify({"ok": True})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5050)
