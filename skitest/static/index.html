@@ -504,7 +504,7 @@ mapImg.onload = function() {
   ctx2.drawImage(mapImg, 0, 0, c2.width, c2.height);
   initCanvas2();
 };
-mapImg.src = '/static/kart.png';
+mapImg.src = 'https://raw.githubusercontent.com/odiskis/Ski-IDN-test/main/skitest/static/kart.png';
 
 function initCanvas1() {
   c1.addEventListener('mousedown', e => { drawing1=true; history1.push(ctx1.getImageData(0,0,c1.width,c1.height)); const p=getPos(c1,e); ctx1.beginPath(); ctx1.moveTo(p.x,p.y); ctx1.strokeStyle='#e74c3c'; ctx1.lineWidth=4; ctx1.lineCap='round'; ctx1.lineJoin='round'; });
