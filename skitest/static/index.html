@@ -158,8 +158,41 @@
 
 <div class="container">
 
+  <!-- STEP -1: CONSENT -->
+  <div class="step active" id="step-1">
+    <div class="welcome-hero">
+      <h1>Samtykke til deltakelse</h1>
+      <p>Les gjennom og bekreft samtykket under før du starter studien.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Consent Form — Informed Consent</div>
+      <div style="font-size:0.93rem;line-height:1.8;color:var(--text);margin-bottom:24px;">
+        <p style="margin-bottom:12px;">I have read the information for the study <strong>"Interactive Digital Narratives for Ski-Touring Terrain Understanding"</strong>. I will participate in this study.</p>
+        <p style="margin-bottom:12px;">I was informed that the following data will be obtained today during this study from me:</p>
+        <ul style="margin:0 0 12px 20px;">
+          <li>Route drawings on a topographic map (before and after terrain model interaction)</li>
+          <li>Questionnaire responses and opinion scores</li>
+          <li>Open-text answers about my experience</li>
+          <li>Self-reported experience level with ski touring</li>
+        </ul>
+        <p style="margin-bottom:12px;">I approve that all recorded data will be saved and will be used pseudonymized (identification data will be stored separately from recorded data and only be accessible to a small circle of authorized personnel) for research analysis. All data I give will be handled confidentially. All information will be used for research purposes only. Personal data will not be given to any third party.</p>
+        <p style="margin-bottom:12px;">I am aware that participating in this study is voluntary and I can withdraw anytime without giving any reason. Doing so I will not suffer any disadvantage.</p>
+        <p>Additionally, I am aware that I will handle everything confidentially that I hear and see today, and I will not give any information to other people.</p>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;align-items:flex-start;gap:14px;">
+        <input type="checkbox" id="consent-check" style="width:20px;height:20px;margin-top:2px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;">
+        <label for="consent-check" style="font-size:0.93rem;font-weight:600;color:var(--text);cursor:pointer;line-height:1.6;">
+          I have read and understood the above information. I voluntarily agree to participate in this study.
+        </label>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <button class="btn btn-primary" onclick="submitConsent()">Bekreft og start →</button>
+    </div>
+  </div>
+
   <!-- STEP 0 -->
-  <div class="step active" id="step0">
+  <div class="step" id="step0">
     <div class="welcome-hero">
       <h1>Velkommen til brukertest</h1>
       <p>Takk for at du hjelper meg undersøke turplanlegging i forbindelse med min masteroppgave.</p>
@@ -425,6 +458,16 @@
 <script>
 const MAP_URL = '/kart.png';
 let pid = null;
+
+
+function submitConsent() {
+  if (!document.getElementById('consent-check').checked) {
+    alert('Du må bekrefte samtykket for å delta i studien.');
+    return;
+  }
+  document.getElementById('step-1').classList.remove('active');
+  document.getElementById('step0').classList.add('active');
+}
 
 async function startTest() {
   const exp = document.getElementById('exp-level').value;
