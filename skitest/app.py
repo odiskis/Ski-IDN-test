@@ -134,7 +134,7 @@ def combined_map(pid):
                      download_name=f"kombinert_{pid}.png",
                      as_attachment=True)
 
-@app.route("/api/admin/delete/<pid>", methods=["DELETE","POST"])
+@app.route("/api/admin/delete/<pid>", methods=["GET","POST","DELETE"])
 def delete_entry(pid):
     pw = request.args.get("pw", "")
     if not check_pw(pw):
@@ -143,7 +143,7 @@ def delete_entry(pid):
     save_data(responses)
     return jsonify({"ok": True})
 
-@app.route("/api/admin/delete-all", methods=["DELETE","POST"])
+@app.route("/api/admin/delete-all", methods=["GET","DELETE","POST"])
 def delete_all():
     pw = request.args.get("pw", "")
     if not check_pw(pw):
