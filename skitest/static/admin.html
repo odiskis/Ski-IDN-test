@@ -315,7 +315,7 @@ function downloadCombinedCanvas(pid) {
 async function deleteEntry(pid) {
   if (!confirm(`Slette hele besvarelsen fra deltaker ${pid}?\n\nDette kan ikke angres.`)) return;
   try {
-    const r = await fetch(BASE + `/api/admin/delete/${pid}?pw=${encodeURIComponent(pw)}`, {method:'POST'});
+    const r = await fetch(BASE + `/api/admin/delete/${pid}?pw=${encodeURIComponent(pw)}`, {method:'GET'});
     if (!r.ok) { alert('Kunne ikke slette.'); return; }
     allData = allData.filter(d => d.pid !== pid);
     render(allData);
