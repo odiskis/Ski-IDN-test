@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · Brukertest Analyse</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#1A3C5E; --blue:#2563A8; --accent:#3B82C4;
+    --green:#2D7D46; --orange:#D97706; --red:#C0392B;
+    --white:#fff; --muted:#64748B; --border:#CBD5E1;
+    --card:#F1F5F9; --bg:#E8EFF6; --text:#1E293B;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:var(--text); }
+  .topbar { background:var(--navy); color:white; padding:16px 32px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar h1 { font-weight:700; font-size:1.2rem; }
+  .topbar span { font-size:0.8rem; color:#94B8D4; }
+  .container { max-width:1200px; margin:0 auto; padding:40px 24px; }
+  .login-box { max-width:380px; margin:100px auto; background:white; border-radius:16px; padding:40px; border:1px solid var(--border); box-shadow:0 4px 20px rgba(26,60,94,0.1); text-align:center; }
+  .login-box h2 { font-weight:700; font-size:1.6rem; margin-bottom:8px; }
+  .login-box p { color:var(--muted); font-size:0.9rem; margin-bottom:24px; }
+  .login-box input { width:100%; border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; margin-bottom:14px; background:var(--card); }
+  .btn { padding:10px 22px; border-radius:10px; border:none; font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; cursor:pointer; font-size:0.9rem; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; }
+  .btn-primary { background:var(--accent); color:white; width:100%; justify-content:center; padding:13px; }
+  .btn-primary:hover { background:var(--blue); }
+  .btn-outline { background:white; color:var(--text); border:1px solid var(--border); }
+  .btn-outline:hover { background:var(--card); border-color:var(--accent); }
+  .btn-danger { background:#fee2e2; color:var(--red); border:1px solid #fca5a5; }
+  .btn-danger:hover { background:#fca5a5; }
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+  .stat-card { background:white; border-radius:14px; padding:24px; border:1px solid var(--border); text-align:center; }
+  .stat-num { font-weight:700; font-size:2.4rem; color:var(--accent); }
+  .stat-label { font-size:0.8rem; color:var(--muted); margin-top:4px; }
+  .section { background:white; border-radius:16px; padding:28px; margin-bottom:24px; border:1px solid var(--border); }
+  .section-title { font-weight:700; font-size:1.3rem; margin-bottom:20px; }
+  .toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
+
+  /* LIKERT */
+  .likert-row { display:flex; gap:4px; align-items:stretch; margin-bottom:12px; }
+  .likert-label { width:300px; font-size:0.83rem; flex-shrink:0; display:flex; align-items:center; }
+  .likert-bars { display:flex; gap:4px; flex:1; }
+  .likert-bar {
+    flex:1; border-radius:8px; padding:6px 4px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; min-height:52px; transition:all 0.2s;
+  }
+  .likert-bar .bar-num { font-size:0.95rem; font-weight:700; }
+  .likert-bar .bar-count { font-size:0.68rem; }
+  .likert-avg { width:52px; text-align:right; font-size:0.9rem; color:var(--accent); font-weight:700; flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; }
+
+  /* ROUTES */
+  .route-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:20px; }
+  .route-card { border:1px solid var(--border); border-radius:12px; overflow:hidden; background:white; }
+  .combined-preview { position:relative; width:100%; background:#f8fafc; }
+  .combined-preview canvas { display:block; width:100%; height:auto; }
+  .map-badge { position:absolute; top:6px; right:6px; display:flex; gap:4px; }
+  .map-badge span { background:rgba(0,0,0,0.65); color:white; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:99px; display:flex; align-items:center; gap:4px; }
+  .route-meta { padding:10px 14px; font-size:0.82rem; color:var(--muted); background:var(--card); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+  .route-actions { padding:10px 14px; display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border); }
+  .dl-btn { flex:1; padding:7px 8px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:600; text-align:center; transition:all 0.2s; min-width:80px; }
+  .dl-btn.red { color:var(--red); border-color:#fca5a5; } .dl-btn.red:hover { background:#fff0f0; }
+  .dl-btn.green { color:var(--green); border-color:#86efac; } .dl-btn.green:hover { background:#f0fff4; }
+  .dl-btn.blue { color:var(--accent); border-color:#93c5fd; } .dl-btn.blue:hover { background:var(--card); }
+  .dl-btn.del { color:var(--red); border-color:#fca5a5; background:#fff8f8; } .dl-btn.del:hover { background:#fee2e2; }
+
+  .changed-badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.75rem; font-weight:600; }
+  .badge-ja { background:#d5f5e3; color:var(--green); }
+  .badge-delvis { background:#fef9c3; color:#b45309; }
+  .badge-nei { background:#fee2e2; color:var(--red); }
+
+  .quote { background:var(--card); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; margin-bottom:10px; font-size:0.88rem; line-height:1.6; }
+  .quote .qmeta { font-size:0.75rem; color:var(--muted); margin-top:4px; }
+
+  .resp-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+  .resp-table th { background:var(--card); padding:10px 12px; text-align:left; font-weight:600; border-bottom:2px solid var(--border); }
+  .resp-table td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .resp-table tr:hover { background:var(--card); }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>Brukertest Analyse · NTNU 2026</h1>
+  <span id="last-updated"></span>
+</div>
+
+<div class="container" id="main" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h2 style="font-weight:700;font-size:1.8rem;">Oversikt</h2>
+      <p style="color:var(--muted);font-size:0.9rem;">Odin Bård Østvedt · Masteroppgave NTNU 2026</p>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn-outline" onclick="exportCSV()">📥 Eksporter CSV</button>
+    </div>
+  </div>
+
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="section">
+    <div class="section-title">Surveyresultater — gjennomsnitt</div>
+    <div id="likert-section"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Rutekart — kombinert visning</div>
+    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:20px;">
+      <span style="display:inline-block;width:12px;height:12px;background:#C0392B;border-radius:50%;margin-right:4px;"></span>Rød = før terrengmodellen &nbsp;·&nbsp;
+      <span style="display:inline-block;width:12px;height:12px;background:#2D7D46;border-radius:50%;margin-right:4px;"></span>Grønn = etter terrengmodellen
+    </p>
+    <div id="change-summary" style="margin-bottom:20px;"></div>
+    <div class="route-grid" id="route-grid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Åpne svar</div>
+    <div id="open-answers"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Begrunnelser</div>
+    <div id="reasons-table"></div>
+  </div>
+</div>
+
+<div id="login-wrap">
+  <div class="login-box">
+    <h2>Admin-tilgang</h2>
+    <p>Skriv inn passordet for å se analysen</p>
+    <input type="password" id="pw-input" placeholder="Passord" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" onclick="doLogin()">Logg inn</button>
+    <p id="login-err" style="color:var(--red);font-size:0.82rem;margin-top:10px;"></p>
+  </div>
+</div>
+
+<script>
+let pw = '', allData = [];
+const BASE = '/skitest/app.cgi';
+const MAP_URL = BASE + '/kart.png';
+
+const SURVEY_LABELS = {
+  s1: 'Jeg følte meg til stede i det digitale terrenget',
+  s2: 'Terrenget føltes realistisk nok til å danne seg et inntrykk av faktiske forhold',
+  s3: 'Terrengmodellen ga meg bedre forståelse av snøskredfaren i terrenget enn kartet alene',
+  s4: 'Opplevelsen hjalp meg å vurdere mine egne ferdigheter opp mot kravene i terrenget',
+  s5: 'Terrengmodellen påvirket hvordan jeg tenker på rutevalg og sikkerhet',
+  s6: 'Sammenlignet med et vanlig 2D-kart er terrengmodellen bedre for å forstå toppturterreng',
+  s7: 'Jeg ville brukt et slikt verktøy igjen for å planlegge en topptur',
+  open1: 'Hva var mest verdifullt med terrengmodell-opplevelsen',
+  open2: 'Hva overrasket deg mest i terrenget',
+  open3: 'Andre kommentarer eller forslag til forbedringer'
+};
+
+async function doLogin() {
+  pw = document.getElementById('pw-input').value;
+  try {
+    const r = await fetch(BASE + '/api/admin/data?pw=' + encodeURIComponent(pw));
+    if (!r.ok) { document.getElementById('login-err').textContent = 'Feil passord.'; return; }
+    allData = await r.json();
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+    document.getElementById('last-updated').textContent = 'Oppdatert: ' + new Date().toLocaleTimeString('no');
+    render(allData);
+  } catch(e) { document.getElementById('login-err').textContent = 'Kunne ikke koble til.'; }
+}
+
+function render(data) {
+  renderStats(data);
+  renderLikert(data);
+  renderRoutes(data);
+  renderOpenAnswers(data);
+  renderReasons(data);
+}
+
+function renderStats(data) {
+  const n = data.length;
+  const changed = data.filter(d => d.route_changed === 'ja').length;
+  const avgS6 = avg(data,'s6'), avgS7 = avg(data,'s7');
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">Deltakere totalt</div></div>
+    <div class="stat-card"><div class="stat-num">${changed}</div><div class="stat-label">Endret ruten</div></div>
+    <div class="stat-card"><div class="stat-num">${avgS6.toFixed(1)}/5</div><div class="stat-label">Snitt: bedre enn kart</div></div>
+    <div class="stat-card"><div class="stat-num">${avgS7.toFixed(1)}/5</div><div class="stat-label">Snitt: ville brukt igjen</div></div>`;
+}
+
+function avg(data, key) {
+  const vals = data.map(d => parseInt(d.survey?.[key])).filter(v => !isNaN(v));
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+}
+
+function renderLikert(data) {
+  let html = '';
+  for (const [key, label] of Object.entries(SURVEY_LABELS)) {
+    if (key.startsWith('open')) continue;
+    const vals = data.map(d => parseInt(d.survey?.[key])).filter(v => !isNaN(v));
+    const counts = [1,2,3,4,5].map(v => vals.filter(x=>x===v).length);
+    const mean = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '-';
+    html += `<div class="likert-row">
+      <div class="likert-label">${label}</div>
+      <div class="likert-bars">
+        ${counts.map((c,i) => `
+          <div class="likert-bar" style="background:${c>0?'#3B82C4':'var(--card)'};color:${c>0?'white':'var(--muted)'}">
+            <span class="bar-num">${i+1}</span>
+            <span class="bar-count">ant svar: ${c}</span>
+          </div>`).join('')}
+      </div>
+      <div class="likert-avg">${mean}</div>
+    </div>`;
+  }
+  document.getElementById('likert-section').innerHTML = html;
+}
+
+function renderRoutes(data) {
+  const counts = {ja:0,delvis:0,nei:0};
+  data.forEach(d => { if(d.route_changed) counts[d.route_changed]=(counts[d.route_changed]||0)+1; });
+  const total = data.length || 1;
+  document.getElementById('change-summary').innerHTML = `<div style="display:flex;gap:14px;flex-wrap:wrap">
+    ${Object.entries(counts).map(([k,v])=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center">
+      <div style="font-size:1.6rem;font-weight:700">${v}</div>
+      <div style="font-size:0.8rem;color:var(--muted)">${k==='ja'?'Endret ruten':k==='delvis'?'Delvis endret':'Samme rute'}</div>
+      <div style="font-size:0.75rem;color:var(--accent)">${Math.round(v/total*100)}%</div>
+    </div>`).join('')}
+  </div>`;
+
+  if (!data.length) { document.getElementById('route-grid').innerHTML='<p style="color:var(--muted)">Ingen data ennå.</p>'; return; }
+  const grid = document.getElementById('route-grid');
+  grid.innerHTML = '';
+
+  data.forEach(d => {
+    const badge = d.route_changed==='ja'?'badge-ja':d.route_changed==='delvis'?'badge-delvis':'badge-nei';
+    const badgeText = d.route_changed==='ja'?'Endret':d.route_changed==='delvis'?'Delvis':'Samme';
+    const card = document.createElement('div');
+    card.className = 'route-card';
+    card.id = 'card-' + d.pid;
+
+    const previewDiv = document.createElement('div');
+    previewDiv.className = 'combined-preview';
+    const canvas = document.createElement('canvas');
+    canvas.style.width = '100%';
+    previewDiv.appendChild(canvas);
+    const badgeDiv = document.createElement('div');
+    badgeDiv.className = 'map-badge';
+    badgeDiv.innerHTML = `<span><span style="width:8px;height:8px;border-radius:50%;background:#C0392B;display:inline-block"></span>FØR</span><span><span style="width:8px;height:8px;border-radius:50%;background:#2D7D46;display:inline-block"></span>ETTER</span>`;
+    previewDiv.appendChild(badgeDiv);
+    card.appendChild(previewDiv);
+
+    card.innerHTML += `
+      <div class="route-meta">
+        <span><strong>ID: ${d.pid}</strong> <span class="changed-badge ${badge}">${badgeText}</span></span>
+        <span>${d.experience||'-'} · ${d.timestamp?d.timestamp.substring(0,10):''}</span>
+      </div>
+      <div class="route-actions">
+        ${d.route_before?`<button class="dl-btn red" onclick="downloadMap('${d.route_before}','for_${d.pid}.png')">⬇ FØR</button>`:''}
+        ${d.route_after?`<button class="dl-btn green" onclick="downloadMap('${d.route_after}','etter_${d.pid}.png')">⬇ ETTER</button>`:''}
+        ${d.route_before&&d.route_after?`<button class="dl-btn blue" onclick="downloadCombinedCanvas('${d.pid}')">⬇ Kombinert</button>`:''}
+      </div>`;
+
+    grid.appendChild(card);
+    drawCombinedMap(canvas, d);
+  });
+}
+
+function drawCombinedMap(canvas, d) {
+  const ctx = canvas.getContext('2d');
+  const baseImg = new Image();
+  baseImg.crossOrigin = 'anonymous';
+  baseImg.onload = function() {
+    canvas.width = baseImg.naturalWidth;
+    canvas.height = baseImg.naturalHeight;
+    ctx.drawImage(baseImg, 0, 0);
+    if (d.route_before) {
+      const imgB = new Image();
+      imgB.onload = function() {
+        ctx.drawImage(imgB, 0, 0, canvas.width, canvas.height);
+        if (d.route_after) {
+          const imgA = new Image();
+          imgA.onload = function() { ctx.drawImage(imgA, 0, 0, canvas.width, canvas.height); };
+          imgA.src = d.route_after;
+        }
+      };
+      imgB.src = d.route_before;
+    }
+  };
+  baseImg.onerror = function() {
+    if (d.route_before) {
+      const imgB = new Image();
+      imgB.onload = function() {
+        canvas.width = imgB.naturalWidth; canvas.height = imgB.naturalHeight;
+        ctx.drawImage(imgB, 0, 0);
+        if (d.route_after) {
+          const imgA = new Image();
+          imgA.onload = function() { ctx.drawImage(imgA, 0, 0); };
+          imgA.src = d.route_after;
+        }
+      };
+      imgB.src = d.route_before;
+    }
+  };
+  baseImg.src = MAP_URL;
+}
+
+function downloadMap(dataUrl, filename) {
+  const a = document.createElement('a'); a.href = dataUrl; a.download = filename; a.click();
+}
+
+function downloadCombinedCanvas(pid) {
+  const url = BASE + '/api/admin/combined/' + pid + '?pw=' + encodeURIComponent(pw);
+  fetch(url)
+    .then(r => { if (!r.ok) throw new Error('Status: ' + r.status); return r.blob(); })
+    .then(blob => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kombinert_' + pid + '.png'; a.click(); })
+    .catch(e => alert('Feil: ' + e.message));
+}
+
+async function deleteEntry(pid) {
+  if (!confirm(`Slette hele besvarelsen fra deltaker ${pid}?\n\nDette kan ikke angres.`)) return;
+  try {
+    const r = await fetch(BASE + `/api/admin/delete/${pid}?pw=${encodeURIComponent(pw)}`, {method:'DELETE'});
+    if (!r.ok) { alert('Kunne ikke slette.'); return; }
+    allData = allData.filter(d => d.pid !== pid);
+    render(allData);
+  } catch(e) { alert('Feil ved sletting.'); }
+}
+
+function renderOpenAnswers(data) {
+  const qs = [{key:'open1',label:'Mest verdifullt'},{key:'open2',label:'Hva overrasket deg'},{key:'open3',label:'Andre kommentarer'}];
+  let html = '';
+  for (const q of qs) {
+    const answers = data.map(d=>({text:d.survey?.[q.key],pid:d.pid,exp:d.experience})).filter(a=>a.text&&a.text.trim());
+    if (!answers.length) continue;
+    html += `<h4 style="font-size:0.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">${q.label}</h4>`;
+    html += answers.map(a=>`<div class="quote">${a.text}<div class="qmeta">ID: ${a.pid} · ${a.exp||'-'}</div></div>`).join('');
+  }
+  document.getElementById('open-answers').innerHTML = html || '<p style="color:var(--muted)">Ingen åpne svar ennå.</p>';
+}
+
+function renderReasons(data) {
+  let html = `<table class="resp-table"><thead><tr>
+    <th>ID</th><th>Erfaring</th><th>Begrunnelse FØR</th><th>Begrunnelse ETTER</th><th>Endret?</th><th></th>
+  </tr></thead><tbody>`;
+  data.forEach(d => {
+    const badge = d.route_changed==='ja'?'badge-ja':d.route_changed==='delvis'?'badge-delvis':'badge-nei';
+    html += `<tr>
+      <td style="font-family:monospace;font-size:0.8rem">${d.pid}</td>
+      <td>${d.experience||'-'}</td>
+      <td>${d.route_before_reason||'-'}</td>
+      <td>${d.route_after_reason||'-'}</td>
+      <td><span class="changed-badge ${badge}">${d.route_changed||'-'}</span></td>
+      <td><button class="dl-btn del" onclick="deleteEntry('${d.pid}')">🗑 Slett</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('reasons-table').innerHTML = html;
+}
+
+function exportCSV() {
+  const metaKeys = ['pid','timestamp','experience','route_changed','route_before_reason','route_after_reason'];
+  const metaLabels = ['Deltaker-ID','Tidspunkt','Erfaringsnivå','Endret ruten','Begrunnelse FØR','Begrunnelse ETTER'];
+  const surveyKeys = ['s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'];
+  const surveyLabels = surveyKeys.map(k => SURVEY_LABELS[k]);
+  const allKeys = [...metaKeys, ...surveyKeys];
+  const headers = [...metaLabels, ...surveyLabels];
+  const rows = allData.map(d => allKeys.map(h => {
+    const v = surveyKeys.includes(h) ? (d.survey?.[h]||'') : (d[h]||'');
+    return `"${v.toString().replace(/"/g,'""')}"`;
+  }).join(','));
+  const blob = new Blob([[headers.join(','),...rows].join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='brukertest_data.csv'; a.click();
+}
+</script>
+</body>
+</html>
