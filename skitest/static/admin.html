@@ -105,7 +105,7 @@
     <div class="toolbar">
       <button class="btn btn-outline" onclick="exportCSV()">📥 Eksporter CSV</button>
       
-      <button class="btn btn-outline" onclick="loadData()">🔄 Oppdater</button>
+      
     </div>
   </div>
 
@@ -216,7 +216,10 @@ function renderLikert(data) {
     const mean = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '-';
     html += `<div class="likert-row">
       <div class="likert-label">${label}</div>
-      <div class="likert-bars">${counts.map((c,i)=>`<div class="likert-bar" title="${i+1}: ${c} svar"><div class="fill" style="height:${(c/maxC)*100}%"></div><span style="position:relative;z-index:1">${i+1}</span></div>`).join('')}</div>
+      <div class="likert-bars">${counts.map((c,i)=>`<div class="likert-bar" title="${i+1}: ${c} svar" style="background:${c>0?'#3B82C4':'var(--card)'};color:${c>0?'white':'var(--muted)'}">
+        <span style="font-size:0.8rem;font-weight:700">${i+1}</span>
+        ${c>0?`<span style="font-size:0.7rem;display:block">(${c})</span>`:''}
+      </div>`).join('')}</div>
       <div class="likert-avg">${mean}</div>
     </div>`;
   }
@@ -417,10 +420,10 @@ function renderOpenAnswers(data) {
 }
 
 function renderReasons(data) {
-  let html = `<table class="resp-table"><thead><tr><th>ID</th><th>Erfaring</th><th>Begrunnelse FØR</th><th>Begrunnelse ETTER</th><th>Endret?</th></tr></thead><tbody>`;
+  let html = `<table class="resp-table"><thead><tr><th>ID</th><th>Erfaring</th><th>Begrunnelse FØR</th><th>Begrunnelse ETTER</th><th>Endret?</th><th></th></tr></thead><tbody>`;
   data.forEach(d => {
     const badge = d.route_changed==='ja'?'badge-ja':d.route_changed==='delvis'?'badge-delvis':'badge-nei';
-    html += `<tr><td style="font-family:monospace;font-size:0.8rem">${d.pid}</td><td>${d.experience||'-'}</td><td>${d.route_before_reason||'-'}</td><td>${d.route_after_reason||'-'}</td><td><span class="changed-badge ${badge}">${d.route_changed||'-'}</span></td></tr>`;
+    html += `<tr><td style="font-family:monospace;font-size:0.8rem">${d.pid}</td><td>${d.experience||'-'}</td><td>${d.route_before_reason||'-'}</td><td>${d.route_after_reason||'-'}</td><td><span class="changed-badge ${badge}">${d.route_changed||'-'}</span></td><td><button class="dl-btn del" style="white-space:nowrap" onclick="deleteEntry('${d.pid}')">🗑 Slett</button></td></tr>`;
   });
   html += '</tbody></table>';
   document.getElementById('reasons-table').innerHTML = html;
