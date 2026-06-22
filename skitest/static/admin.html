@@ -104,7 +104,7 @@
     </div>
     <div class="toolbar">
       <button class="btn btn-outline" onclick="exportCSV()">📥 Eksporter CSV</button>
-      <button class="btn btn-outline" onclick="downloadAllMaps()">🗺 Last ned alle kart</button>
+      
       <button class="btn btn-outline" onclick="loadData()">🔄 Oppdater</button>
     </div>
   </div>
@@ -157,7 +157,7 @@ const MAP_URL = '/kart.png';
 async function doLogin() {
   pw = document.getElementById('pw-input').value;
   try {
-    const r = await fetch('/api/admin/data?pw=' + encodeURIComponent(pw));
+    const r = await fetch('/skitest/app.cgi/api/admin/data?pw=' + encodeURIComponent(pw));
     if (!r.ok) { document.getElementById('login-err').textContent = 'Feil passord.'; return; }
     allData = await r.json();
     document.getElementById('login-wrap').style.display = 'none';
@@ -168,7 +168,7 @@ async function doLogin() {
 }
 
 async function loadData() {
-  const r = await fetch('/api/admin/data?pw=' + encodeURIComponent(pw));
+  const r = await fetch('/skitest/app.cgi/api/admin/data?pw=' + encodeURIComponent(pw));
   allData = await r.json();
   document.getElementById('last-updated').textContent = 'Oppdatert: ' + new Date().toLocaleTimeString('no');
   render(allData);
@@ -278,7 +278,7 @@ function renderRoutes(data) {
         <button class="dl-btn red" onclick="downloadRouteOnly('${d.pid}','before')">⬇ FØR</button>
         <button class="dl-btn green" onclick="downloadRouteOnly('${d.pid}','after')">⬇ ETTER</button>
         <button class="dl-btn blue" onclick="downloadCombinedCanvas('${d.pid}')">⬇ Kombinert</button>
-        <button class="dl-btn del" onclick="deleteEntry('${d.pid}')">🗑 Slett besvarelse</button>
+        <button class="dl-btn del" onclick="deleteEntry('${d.pid}')">🗑 Slett denne</button>
       </div>`;
 
     grid.appendChild(card);
@@ -350,7 +350,7 @@ function getCombinedCanvas(pid) {
 
 function downloadCombinedCanvas(pid) {
   if (!pw) { alert('Ikke logget inn.'); return; }
-  const url = '/api/admin/combined/' + pid + '?pw=' + encodeURIComponent(pw);
+  const url = '/skitest/app.cgi/api/admin/combined/' + pid + '?pw=' + encodeURIComponent(pw);
   fetch(url)
     .then(r => {
       if (!r.ok) throw new Error('Status: ' + r.status);
