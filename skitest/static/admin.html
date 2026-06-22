@@ -216,9 +216,9 @@ function renderLikert(data) {
     const mean = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '-';
     html += `<div class="likert-row">
       <div class="likert-label">${label}</div>
-      <div class="likert-bars">${counts.map((c,i)=>`<div class="likert-bar" title="${i+1}: ${c} svar" style="background:${c>0?'#3B82C4':'var(--card)'};color:${c>0?'white':'var(--muted)'}">
-        <span style="font-size:0.8rem;font-weight:700">${i+1}</span>
-        ${c>0?`<span style="font-size:0.7rem;display:block">(${c})</span>`:''}
+      <div class="likert-bars">${counts.map((c,i)=>`<div class="likert-bar" style="background:${c>0?'#3B82C4':'var(--card)'};color:${c>0?'white':'var(--muted)'};flex-direction:column;gap:2px;padding:4px 2px" title="${i+1}: ${c} svar">
+        <span style="font-size:0.9rem;font-weight:700">${i+1}</span>
+        <span style="font-size:0.68rem;opacity:0.85">(ant svar: ${c})</span>
       </div>`).join('')}</div>
       <div class="likert-avg">${mean}</div>
     </div>`;
@@ -430,9 +430,32 @@ function renderReasons(data) {
 }
 
 function exportCSV() {
-  const headers = ['pid','timestamp','experience','route_changed','route_before_reason','route_after_reason','s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'];
-  const rows = allData.map(d => headers.map(h => {
-    const v = ['s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'].includes(h) ? (d.survey?.[h]||'') : (d[h]||'');
+  const surveyKeys = ['s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'];
+  const surveyLabels = {
+    s1: 'Jeg følte meg til stede i det digitale terrenget',
+    s2: 'Terrenget føltes realistisk nok til å danne seg et inntrykk av faktiske forhold',
+    s3: 'Terrengmodellen ga meg bedre forståelse av snøskredfaren i terrenget enn kartet alene',
+    s4: 'Opplevelsen hjalp meg å vurdere mine egne ferdigheter opp mot kravene i terrenget',
+    s5: 'Terrengmodellen påvirket hvordan jeg tenker på rutevalg og sikkerhet',
+    s6: 'Sammenlignet med et vanlig 2D-kart er terrengmodellen bedre for å forstå toppturterreng',
+    s7: 'Jeg ville brukt et slikt verktøy igjen for å planlegge en topptur',
+    open1: 'Hva var mest verdifullt med terrengmodell-opplevelsen',
+    open2: 'Hva overrasket deg mest i terrenget',
+    open3: 'Andre kommentarer eller forslag til forbedringer'
+  };
+  const metaKeys = ['pid','timestamp','experience','route_changed','route_before_reason','route_after_reason'];
+  const metaLabels = {
+    pid: 'Deltaker-ID',
+    timestamp: 'Tidspunkt',
+    experience: 'Erfaringsnivå',
+    route_changed: 'Endret ruten',
+    route_before_reason: 'Begrunnelse FØR',
+    route_after_reason: 'Begrunnelse ETTER'
+  };
+  const allKeys = [...metaKeys, ...surveyKeys];
+  const headers = [...metaKeys.map(k => metaLabels[k]), ...surveyKeys.map(k => surveyLabels[k])];
+  const rows = allData.map(d => allKeys.map(h => {
+    const v = surveyKeys.includes(h) ? (d.survey?.[h]||'') : (d[h]||'');
     return `"${v.toString().replace(/"/g,'""')}"`;
   }).join(','));
   const blob = new Blob([[headers.join(','),...rows].join('\n')], {type:'text/csv;charset=utf-8;'});
