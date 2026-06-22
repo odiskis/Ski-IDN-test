@@ -1,0 +1,17 @@
+name: Deploy to NTNU
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to NTNU server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: login.stud.ntnu.no
+          username: odinbo
+          key: ${{ secrets.NTNU_SSH_KEY }}
+          script: ~/public_html/skitest/update.sh
