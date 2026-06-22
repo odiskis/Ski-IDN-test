@@ -288,7 +288,7 @@
     <div class="card">
       <div class="card-title">Din begrunnelse</div>
       <label class="survey-label">Beskriv kort hvorfor du valgte denne ruten (2–3 setninger). Hva tok du hensyn til?</label>
-      <textarea id="reason-before" placeholder="Jeg valgte denne ruten fordi..."></textarea>
+      <textarea id="reason-before" autocomplete="off" placeholder="Jeg valgte denne ruten fordi..."></textarea>
     </div>
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(0)">← Tilbake</button>
@@ -367,7 +367,7 @@
       </div>
       <div class="survey-q">
         <label class="survey-label">Beskriv hva som eventuelt er endret og hvorfor. Hva overrasket deg i terrengmodellen?</label>
-        <textarea id="reason-after" placeholder="Etter å ha sett terrenget i 3D valgte jeg å..."></textarea>
+        <textarea id="reason-after" autocomplete="off" placeholder="Etter å ha sett terrenget i 3D valgte jeg å..."></textarea>
       </div>
     </div>
     <div class="btn-row">
@@ -465,15 +465,15 @@
       <div class="card-title">Åpne spørsmål</div>
       <div class="survey-q">
         <label class="survey-label">Hva var mest verdifullt med terrengmodell-opplevelsen?</label>
-        <textarea id="open1" placeholder="Det jeg fant mest nyttig var..."></textarea>
+        <textarea id="open1" autocomplete="off" placeholder="Det jeg fant mest nyttig var..."></textarea>
       </div>
       <div class="survey-q">
         <label class="survey-label">Hva overrasket deg mest i terrenget (sammenlignet med kartet)?</label>
-        <textarea id="open2" placeholder="Jeg ble overrasket over..."></textarea>
+        <textarea id="open2" autocomplete="off" placeholder="Jeg ble overrasket over..."></textarea>
       </div>
       <div class="survey-q">
         <label class="survey-label">Andre kommentarer eller forslag til forbedringer?</label>
-        <textarea id="open3" placeholder="Valgfritt..."></textarea>
+        <textarea id="open3" autocomplete="off" required="false" placeholder="Valgfritt..."></textarea>
       </div>
     </div>
     <div class="btn-row">
@@ -496,7 +496,7 @@
 </div>
 
 <script>
-const MAP_URL = '/kart.png';
+const MAP_URL = '/skitest/app.cgi/kart.png';
 let pid = null;
 
 
@@ -513,7 +513,7 @@ async function startTest() {
   const exp = document.getElementById('exp-level').value;
   if (!exp) { alert('Velg erfaringsnivå først.'); return; }
   try {
-    const r = await fetch('/api/start', {method:'POST'});
+    const r = await fetch('/skitest/app.cgi/api/start', {method:'POST'});
     const d = await r.json();
     pid = d.pid;
   } catch(e) { pid = Math.random().toString(36).substring(2,10); }
@@ -541,7 +541,13 @@ function nextStep3() {
   goStep(4);
 }
 
-function openFullscreen() { document.getElementById('terrain-fs').classList.add('active'); }
+function openFullscreen() {
+  document.getElementById('terrain-fs').classList.add('active');
+  setTimeout(() => {
+    const iframe = document.querySelector('#terrain-fs iframe');
+    if (iframe) iframe.focus();
+  }, 300);
+}
 function closeFullscreen() { document.getElementById('terrain-fs').classList.remove('active'); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
 
@@ -626,7 +632,7 @@ async function submitAll() {
   btn.textContent = 'Sender inn...'; btn.disabled = true;
 
   try {
-    const r = await fetch('/api/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const r = await fetch('/skitest/app.cgi/api/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
     if (!r.ok) throw new Error('Server svarte med feil: ' + r.status);
     const d = await r.json();
     document.getElementById('done-pid').textContent = 'Deltaker-ID: ' + (d.pid || pid || 'ukjent');
