@@ -50,25 +50,13 @@
   .likert-bar .bar-count { font-size:0.75rem; }
   .likert-avg { width:52px; text-align:right; font-size:0.9rem; color:var(--accent); font-weight:700; flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; }
 
-  /* ROUTES */
-  .route-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:20px; }
-  .route-card { border:1px solid var(--border); border-radius:12px; overflow:hidden; background:white; }
-  .combined-preview { position:relative; width:100%; background:#f8fafc; }
-  .combined-preview canvas { display:block; width:100%; height:auto; }
-  .map-badge { position:absolute; top:6px; right:6px; display:flex; gap:4px; }
-  .map-badge span { background:rgba(0,0,0,0.65); color:white; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:99px; display:flex; align-items:center; gap:4px; }
-  .route-meta { padding:10px 14px; font-size:0.82rem; color:var(--muted); background:var(--card); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
-  .route-actions { padding:10px 14px; display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border); }
-  .dl-btn { flex:1; padding:7px 8px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:600; text-align:center; transition:all 0.2s; min-width:80px; }
-  .dl-btn.red { color:var(--red); border-color:#fca5a5; } .dl-btn.red:hover { background:#fff0f0; }
-  .dl-btn.green { color:var(--green); border-color:#86efac; } .dl-btn.green:hover { background:#f0fff4; }
-  .dl-btn.blue { color:var(--accent); border-color:#93c5fd; } .dl-btn.blue:hover { background:var(--card); }
-  .dl-btn.del { color:var(--red); border-color:#fca5a5; background:#fff8f8; } .dl-btn.del:hover { background:#fee2e2; }
+  .status-badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.75rem; font-weight:600; }
+  .badge-finished { background:#d5f5e3; color:var(--green); }
+  .badge-gaveup { background:#fee2e2; color:var(--red); }
+  .badge-none { background:var(--card); color:var(--muted); }
 
-  .changed-badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.75rem; font-weight:600; }
-  .badge-ja { background:#d5f5e3; color:var(--green); }
-  .badge-delvis { background:#fef9c3; color:#b45309; }
-  .badge-nei { background:#fee2e2; color:var(--red); }
+  .dl-btn { flex:1; padding:7px 8px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:600; text-align:center; transition:all 0.2s; min-width:80px; }
+  .dl-btn.del { color:var(--red); border-color:#fca5a5; background:#fff8f8; } .dl-btn.del:hover { background:#fee2e2; }
 
   .quote { background:var(--card); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; margin-bottom:10px; font-size:0.88rem; line-height:1.6; }
   .quote .qmeta { font-size:0.75rem; color:var(--muted); margin-top:4px; }
@@ -99,18 +87,16 @@
   <div class="stats-grid" id="stats-grid"></div>
 
   <div class="section">
-    <div class="section-title">Surveyresultater — gjennomsnitt</div>
-    <div id="likert-section"></div>
+    <div class="section-title">Oppgavedata — tid og status per deltaker</div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">
+      Avstand til mål (meter) er ikke inkludert her ennå, siden dette avhenger av koblingen til terrengmodellen (Unity) som ikke er på plass.
+    </p>
+    <div id="tasks-table"></div>
   </div>
 
   <div class="section">
-    <div class="section-title">Rutekart — kombinert visning</div>
-    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:20px;">
-      <span style="display:inline-block;width:12px;height:12px;background:#C0392B;border-radius:50%;margin-right:4px;"></span>Rød = før terrengmodellen &nbsp;·&nbsp;
-      <span style="display:inline-block;width:12px;height:12px;background:#2D7D46;border-radius:50%;margin-right:4px;"></span>Grønn = etter terrengmodellen
-    </p>
-    <div id="change-summary" style="margin-bottom:20px;"></div>
-    <div class="route-grid" id="route-grid"></div>
+    <div class="section-title">Surveyresultater — gjennomsnitt</div>
+    <div id="likert-section"></div>
   </div>
 
   <div class="section">
@@ -119,8 +105,8 @@
   </div>
 
   <div class="section">
-    <div class="section-title">Begrunnelser</div>
-    <div id="reasons-table"></div>
+    <div class="section-title">Alle svar</div>
+    <div id="all-responses-table"></div>
   </div>
 </div>
 
@@ -137,19 +123,21 @@
 <script>
 let pw = '', allData = [];
 const BASE = '/skitest/app.cgi';
-const MAP_URL = BASE + '/kart.png';
 
 const SURVEY_LABELS = {
-  s1: 'Jeg følte meg til stede i det digitale terrenget',
-  s2: 'Terrenget føltes realistisk nok til å danne seg et inntrykk av faktiske forhold',
-  s3: 'Terrengmodellen ga meg bedre forståelse av snøskredfaren i terrenget enn kartet alene',
-  s4: 'Opplevelsen hjalp meg å vurdere mine egne ferdigheter opp mot kravene i terrenget',
-  s5: 'Terrengmodellen påvirket hvordan jeg tenker på rutevalg og sikkerhet',
-  s6: 'Sammenlignet med et vanlig 2D-kart er terrengmodellen bedre for å forstå toppturterreng',
-  s7: 'Jeg ville brukt et slikt verktøy igjen for å planlegge en topptur',
-  open1: 'Hva var mest verdifullt med terrengmodell-opplevelsen',
-  open2: 'Hva overrasket deg mest i terrenget',
-  open3: 'Andre kommentarer eller forslag til forbedringer'
+  nav1: 'Det var enkelt å bevege seg rundt ved hjelp av taster og kontroller i terrengmodellen',
+  task_topp_way: 'Det var lett å finne riktig vei til målet i oppgave #1 Topp',
+  task_dal_way: 'Det var lett å finne riktig vei til målet i oppgave #2 Dal',
+  task_topp_sure: 'Hvor sikker var du på at du fant riktig sted i oppgave #1 Topp',
+  task_dal_sure: 'Hvor sikker var du på at du fant riktig sted i oppgave #2 Dal',
+  map_orient: 'Det var lett å forstå hvor jeg var i terrengmodellen i forhold til kartet',
+  map_compare: 'Sammenlignet med 2D-kart: hvor mye bedre/dårligere ga modellen forståelse av terrenget',
+  presence1: 'Jeg fikk en følelse av å bevege meg i et ekte terreng, ikke bare en digital modell',
+  believe1: 'Terrengmodellen oppfattet som en realistisk fremstilling av det virkelige terrenget',
+  believe2: 'Terrengmodellen oppfattet som en pålitelig fremstilling av det virkelige terrenget',
+  believe3: 'Jeg ville stolt på denne modellen for å planlegge en faktisk skitur',
+  open_difficult: 'Hva var vanskelig ved terrengmodellen',
+  open_easy: 'Hva var enkelt ved terrengmodellen'
 };
 
 async function doLogin() {
@@ -167,21 +155,66 @@ async function doLogin() {
 
 function render(data) {
   renderStats(data);
+  renderTasksTable(data);
   renderLikert(data);
-  renderRoutes(data);
   renderOpenAnswers(data);
-  renderReasons(data);
+  renderAllResponses(data);
+}
+
+function fmtTime(seconds) {
+  if (seconds === null || seconds === undefined || isNaN(seconds)) return '-';
+  const m = Math.floor(seconds/60), s = seconds%60;
+  return m + ':' + String(s).padStart(2,'0');
+}
+
+function avgTaskTime(data, taskKey) {
+  const vals = data.map(d => d.tasks?.[taskKey]?.time_seconds).filter(v => typeof v === 'number');
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+}
+
+function completionRate(data, taskKey) {
+  const withStatus = data.filter(d => d.tasks?.[taskKey]?.status);
+  if (!withStatus.length) return 0;
+  const finished = withStatus.filter(d => d.tasks[taskKey].status === 'finished').length;
+  return Math.round(finished / withStatus.length * 100);
 }
 
 function renderStats(data) {
   const n = data.length;
-  const changed = data.filter(d => d.route_changed === 'ja').length;
-  const avgS6 = avg(data,'s6'), avgS7 = avg(data,'s7');
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">Deltakere totalt</div></div>
-    <div class="stat-card"><div class="stat-num">${changed}</div><div class="stat-label">Endret ruten</div></div>
-    <div class="stat-card"><div class="stat-num">${avgS6.toFixed(1)}/5</div><div class="stat-label">Snitt: bedre enn kart</div></div>
-    <div class="stat-card"><div class="stat-num">${avgS7.toFixed(1)}/5</div><div class="stat-label">Snitt: ville brukt igjen</div></div>`;
+    <div class="stat-card"><div class="stat-num">${completionRate(data,'topp')}%</div><div class="stat-label">Fullført oppgave #1 Topp</div></div>
+    <div class="stat-card"><div class="stat-num">${completionRate(data,'dal')}%</div><div class="stat-label">Fullført oppgave #2 Dal</div></div>
+    <div class="stat-card"><div class="stat-num">${fmtTime(avgTaskTime(data,'topp'))} / ${fmtTime(avgTaskTime(data,'dal'))}</div><div class="stat-label">Snitt tid Topp / Dal</div></div>`;
+}
+
+function statusBadge(status) {
+  if (status === 'finished') return '<span class="status-badge badge-finished">Ferdig</span>';
+  if (status === 'gaveup') return '<span class="status-badge badge-gaveup">Gitt opp</span>';
+  return '<span class="status-badge badge-none">-</span>';
+}
+
+function renderTasksTable(data) {
+  let html = `<table class="resp-table"><thead><tr>
+    <th>ID</th><th>Ski-erfaring</th><th>Kart-erfaring</th>
+    <th>Topp: tid</th><th>Topp: status</th>
+    <th>Dal: tid</th><th>Dal: status</th>
+  </tr></thead><tbody>`;
+  data.forEach(d => {
+    const topp = d.tasks?.topp || {};
+    const dal = d.tasks?.dal || {};
+    html += `<tr>
+      <td style="font-family:monospace;font-size:0.8rem">${d.pid}</td>
+      <td>${d.ski_experience||'-'}</td>
+      <td>${d.map_experience||'-'}</td>
+      <td>${fmtTime(topp.time_seconds)}</td>
+      <td>${statusBadge(topp.status)}</td>
+      <td>${fmtTime(dal.time_seconds)}</td>
+      <td>${statusBadge(dal.status)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('tasks-table').innerHTML = data.length ? html : '<p style="color:var(--muted)">Ingen data ennå.</p>';
 }
 
 function avg(data, key) {
@@ -211,105 +244,34 @@ function renderLikert(data) {
   document.getElementById('likert-section').innerHTML = html;
 }
 
-function renderRoutes(data) {
-  const counts = {ja:0,delvis:0,nei:0};
-  data.forEach(d => { if(d.route_changed) counts[d.route_changed]=(counts[d.route_changed]||0)+1; });
-  const total = data.length || 1;
-  document.getElementById('change-summary').innerHTML = `<div style="display:flex;gap:14px;flex-wrap:wrap">
-    ${Object.entries(counts).map(([k,v])=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center">
-      <div style="font-size:1.6rem;font-weight:700">${v}</div>
-      <div style="font-size:0.8rem;color:var(--muted)">${k==='ja'?'Endret ruten':k==='delvis'?'Delvis endret':'Samme rute'}</div>
-      <div style="font-size:0.75rem;color:var(--accent)">${Math.round(v/total*100)}%</div>
-    </div>`).join('')}
-  </div>`;
+function renderOpenAnswers(data) {
+  const qs = [{key:'open_difficult',label:'Hva var vanskelig'},{key:'open_easy',label:'Hva var enkelt'}];
+  let html = '';
+  for (const q of qs) {
+    const answers = data.map(d=>({text:d.survey?.[q.key],pid:d.pid,exp:d.ski_experience})).filter(a=>a.text&&a.text.trim());
+    if (!answers.length) continue;
+    html += `<h4 style="font-size:0.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">${q.label}</h4>`;
+    html += answers.map(a=>`<div class="quote">${a.text}<div class="qmeta">ID: ${a.pid} · ${a.exp||'-'}</div></div>`).join('');
+  }
+  document.getElementById('open-answers').innerHTML = html || '<p style="color:var(--muted)">Ingen åpne svar ennå.</p>';
+}
 
-  if (!data.length) { document.getElementById('route-grid').innerHTML='<p style="color:var(--muted)">Ingen data ennå.</p>'; return; }
-  const grid = document.getElementById('route-grid');
-  grid.innerHTML = '';
-
+function renderAllResponses(data) {
+  let html = `<table class="resp-table"><thead><tr>
+    <th>ID</th><th>Tidspunkt</th><th>Ski-erfaring</th><th>Kart-erfaring</th><th>Kjenner Fannaråken?</th><th></th>
+  </tr></thead><tbody>`;
   data.forEach(d => {
-    const badge = d.route_changed==='ja'?'badge-ja':d.route_changed==='delvis'?'badge-delvis':'badge-nei';
-    const badgeText = d.route_changed==='ja'?'Endret':d.route_changed==='delvis'?'Delvis':'Samme';
-    const card = document.createElement('div');
-    card.className = 'route-card';
-    card.id = 'card-' + d.pid;
-
-    const previewDiv = document.createElement('div');
-    previewDiv.className = 'combined-preview';
-    const canvas = document.createElement('canvas');
-    canvas.style.width = '100%';
-    previewDiv.appendChild(canvas);
-    const badgeDiv = document.createElement('div');
-    badgeDiv.className = 'map-badge';
-    badgeDiv.innerHTML = `<span><span style="width:8px;height:8px;border-radius:50%;background:#C0392B;display:inline-block"></span>FØR</span><span><span style="width:8px;height:8px;border-radius:50%;background:#2D7D46;display:inline-block"></span>ETTER</span>`;
-    previewDiv.appendChild(badgeDiv);
-    card.appendChild(previewDiv);
-
-    card.innerHTML += `
-      <div class="route-meta">
-        <span><strong>ID: ${d.pid}</strong> <span class="changed-badge ${badge}">${badgeText}</span></span>
-        <span>${d.experience||'-'} · ${d.timestamp?d.timestamp.substring(0,10):''}</span>
-      </div>
-      <div class="route-actions">
-        ${d.route_before?`<button class="dl-btn red" onclick="downloadMap('${d.route_before}','for_${d.pid}.png')">⬇ FØR</button>`:''}
-        ${d.route_after?`<button class="dl-btn green" onclick="downloadMap('${d.route_after}','etter_${d.pid}.png')">⬇ ETTER</button>`:''}
-        ${d.route_before&&d.route_after?`<button class="dl-btn blue" onclick="downloadCombinedCanvas('${d.pid}')">⬇ Kombinert</button>`:''}
-      </div>`;
-
-    grid.appendChild(card);
-    drawCombinedMap(canvas, d);
+    html += `<tr>
+      <td style="font-family:monospace;font-size:0.8rem">${d.pid}</td>
+      <td>${d.timestamp?d.timestamp.substring(0,16).replace('T',' '):''}</td>
+      <td>${d.ski_experience||'-'}</td>
+      <td>${d.map_experience||'-'}</td>
+      <td>${d.survey?.area_familiar||'-'}</td>
+      <td><button class="dl-btn del" onclick="deleteEntry('${d.pid}')">🗑 Slett</button></td>
+    </tr>`;
   });
-}
-
-function drawCombinedMap(canvas, d) {
-  const ctx = canvas.getContext('2d');
-  const baseImg = new Image();
-  baseImg.crossOrigin = 'anonymous';
-  baseImg.onload = function() {
-    canvas.width = baseImg.naturalWidth;
-    canvas.height = baseImg.naturalHeight;
-    ctx.drawImage(baseImg, 0, 0);
-    if (d.route_before) {
-      const imgB = new Image();
-      imgB.onload = function() {
-        ctx.drawImage(imgB, 0, 0, canvas.width, canvas.height);
-        if (d.route_after) {
-          const imgA = new Image();
-          imgA.onload = function() { ctx.drawImage(imgA, 0, 0, canvas.width, canvas.height); };
-          imgA.src = d.route_after;
-        }
-      };
-      imgB.src = d.route_before;
-    }
-  };
-  baseImg.onerror = function() {
-    if (d.route_before) {
-      const imgB = new Image();
-      imgB.onload = function() {
-        canvas.width = imgB.naturalWidth; canvas.height = imgB.naturalHeight;
-        ctx.drawImage(imgB, 0, 0);
-        if (d.route_after) {
-          const imgA = new Image();
-          imgA.onload = function() { ctx.drawImage(imgA, 0, 0); };
-          imgA.src = d.route_after;
-        }
-      };
-      imgB.src = d.route_before;
-    }
-  };
-  baseImg.src = MAP_URL;
-}
-
-function downloadMap(dataUrl, filename) {
-  const a = document.createElement('a'); a.href = dataUrl; a.download = filename; a.click();
-}
-
-function downloadCombinedCanvas(pid) {
-  const url = BASE + '/api/admin/combined/' + pid + '?pw=' + encodeURIComponent(pw);
-  fetch(url)
-    .then(r => { if (!r.ok) throw new Error('Status: ' + r.status); return r.blob(); })
-    .then(blob => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kombinert_' + pid + '.png'; a.click(); })
-    .catch(e => alert('Feil: ' + e.message));
+  html += '</tbody></table>';
+  document.getElementById('all-responses-table').innerHTML = html;
 }
 
 async function deleteEntry(pid) {
@@ -322,48 +284,28 @@ async function deleteEntry(pid) {
   } catch(e) { alert('Feil ved sletting.'); }
 }
 
-function renderOpenAnswers(data) {
-  const qs = [{key:'open1',label:'Mest verdifullt'},{key:'open2',label:'Hva overrasket deg'},{key:'open3',label:'Andre kommentarer'}];
-  let html = '';
-  for (const q of qs) {
-    const answers = data.map(d=>({text:d.survey?.[q.key],pid:d.pid,exp:d.experience})).filter(a=>a.text&&a.text.trim());
-    if (!answers.length) continue;
-    html += `<h4 style="font-size:0.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">${q.label}</h4>`;
-    html += answers.map(a=>`<div class="quote">${a.text}<div class="qmeta">ID: ${a.pid} · ${a.exp||'-'}</div></div>`).join('');
-  }
-  document.getElementById('open-answers').innerHTML = html || '<p style="color:var(--muted)">Ingen åpne svar ennå.</p>';
-}
-
-function renderReasons(data) {
-  let html = `<table class="resp-table"><thead><tr>
-    <th>ID</th><th>Erfaring</th><th>Begrunnelse FØR</th><th>Begrunnelse ETTER</th><th>Endret?</th><th></th>
-  </tr></thead><tbody>`;
-  data.forEach(d => {
-    const badge = d.route_changed==='ja'?'badge-ja':d.route_changed==='delvis'?'badge-delvis':'badge-nei';
-    html += `<tr>
-      <td style="font-family:monospace;font-size:0.8rem">${d.pid}</td>
-      <td>${d.experience||'-'}</td>
-      <td>${d.route_before_reason||'-'}</td>
-      <td>${d.route_after_reason||'-'}</td>
-      <td><span class="changed-badge ${badge}">${d.route_changed||'-'}</span></td>
-      <td><button class="dl-btn del" onclick="deleteEntry('${d.pid}')">🗑 Slett</button></td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  document.getElementById('reasons-table').innerHTML = html;
-}
-
 function exportCSV() {
-  const metaKeys = ['pid','timestamp','experience','route_changed','route_before_reason','route_after_reason'];
-  const metaLabels = ['Deltaker-ID','Tidspunkt','Erfaringsnivå','Endret ruten','Begrunnelse FØR','Begrunnelse ETTER'];
-  const surveyKeys = ['s1','s2','s3','s4','s5','s6','s7','open1','open2','open3'];
-  const surveyLabels = surveyKeys.map(k => SURVEY_LABELS[k]);
-  const allKeys = [...metaKeys, ...surveyKeys];
-  const headers = [...metaLabels, ...surveyLabels];
-  const rows = allData.map(d => allKeys.map(h => {
-    const v = surveyKeys.includes(h) ? (d.survey?.[h]||'') : (d[h]||'');
-    return `"${v.toString().replace(/"/g,'""')}"`;
-  }).join(','));
+  const metaKeys = ['pid','timestamp','ski_experience','map_experience'];
+  const metaLabels = ['Deltaker-ID','Tidspunkt','Ski-erfaring','Kart-erfaring'];
+  const taskKeys = ['topp_time_seconds','topp_status','topp_distance_m','dal_time_seconds','dal_status','dal_distance_m'];
+  const taskLabels = ['Topp: tid (s)','Topp: status','Topp: avstand (m)','Dal: tid (s)','Dal: status','Dal: avstand (m)'];
+  const surveyKeys = Object.keys(SURVEY_LABELS).concat(['area_familiar']);
+  const surveyLabels = surveyKeys.map(k => SURVEY_LABELS[k] || 'Har du vært på Fannaråken før');
+  const headers = [...metaLabels, ...taskLabels, ...surveyLabels];
+
+  const rows = allData.map(d => {
+    const meta = metaKeys.map(k => d[k] || '');
+    const tasks = [
+      d.tasks?.topp?.time_seconds ?? '',
+      d.tasks?.topp?.status ?? '',
+      d.tasks?.topp?.distance_m ?? '',
+      d.tasks?.dal?.time_seconds ?? '',
+      d.tasks?.dal?.status ?? '',
+      d.tasks?.dal?.distance_m ?? ''
+    ];
+    const survey = surveyKeys.map(k => d.survey?.[k] ?? '');
+    return [...meta, ...tasks, ...survey].map(v => `"${v.toString().replace(/"/g,'""')}"`).join(',');
+  });
   const blob = new Blob([[headers.join(','),...rows].join('\n')], {type:'text/csv;charset=utf-8;'});
   const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='brukertest_data.csv'; a.click();
 }

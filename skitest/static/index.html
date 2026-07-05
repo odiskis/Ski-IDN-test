@@ -46,17 +46,7 @@
   .card { background:white; border-radius:16px; padding:28px; margin-bottom:20px; border:1px solid var(--border); box-shadow:0 2px 10px rgba(26,60,94,0.07); }
   .card-title { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:16px; }
 
-  .canvas-wrap { border-radius:12px; overflow:hidden; border:2px solid var(--border); cursor:crosshair; }
-  .canvas-wrap canvas { display:block; width:100%; height:auto; }
-  .canvas-toolbar { display:flex; gap:10px; margin-bottom:12px; align-items:center; flex-wrap:wrap; }
-  .tool-btn { padding:7px 16px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.85rem; font-weight:500; transition:all 0.2s; }
-  .tool-btn:hover { background:var(--card); border-color:var(--accent); }
-  .color-indicator { display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border-radius:8px; font-size:0.85rem; font-weight:600; }
-  .color-indicator.red { background:#FFF0F0; color:var(--red); }
-  .color-indicator.green { background:#F0FFF4; color:var(--green); }
-  .color-dot { width:16px; height:16px; border-radius:50%; }
-
-  /* FULLSCREEN */
+  /* FULLSCREEN TERRAIN */
   .terrain-fullscreen { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:black; z-index:9999; flex-direction:column; }
   .terrain-fullscreen.active { display:flex; }
   .terrain-fs-bar { background:var(--navy); color:white; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; font-size:0.85rem; flex-shrink:0; }
@@ -76,6 +66,19 @@
   .control-item { background:white; border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center; }
   .control-key { display:inline-block; background:var(--navy); color:white; border-radius:6px; padding:4px 10px; font-size:0.85rem; font-weight:600; margin-bottom:6px; font-family:monospace; }
   .control-desc { font-size:0.82rem; color:var(--muted); }
+
+  /* REFERENCE MAP WITH TARGET MARKER */
+  .map-ref-wrap { position:relative; border-radius:12px; overflow:hidden; border:2px solid var(--border); }
+  .map-ref-wrap img { display:block; width:100%; height:auto; }
+  .map-marker { position:absolute; width:18px; height:18px; border-radius:50%; background:var(--red); border:3px solid white; box-shadow:0 0 0 2px var(--red); transform:translate(-50%,-50%); }
+  .map-marker-label { position:absolute; background:var(--navy); color:white; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:6px; transform:translate(-50%,-140%); white-space:nowrap; }
+
+  /* TASK TIMER + STATUS BUTTONS */
+  .timer-display { font-family:monospace; font-size:1.4rem; font-weight:700; color:var(--navy); text-align:center; padding:12px; background:var(--card); border-radius:10px; margin:20px 0; border:1px solid var(--border); }
+  .task-btn-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+  .task-btn-row .btn { flex:1; min-width:180px; justify-content:center; }
+  .btn-give-up { background:white; color:var(--red); border:1px solid var(--red); }
+  .btn-give-up:hover { background:#FFF0F0; }
 
   .survey-q { margin-bottom:28px; }
   .survey-label { font-weight:600; font-size:0.95rem; margin-bottom:10px; display:block; color:var(--text); }
@@ -139,7 +142,7 @@
     </div>
     <button class="fs-close" onclick="closeFullscreen()">✕ Lukk terrengmodellen</button>
   </div>
-  <iframe src="https://odinbo.folk.ntnu.no/spill-test/index.html" allowfullscreen></iframe>
+  <iframe id="terrain-iframe" src="https://odinbo.folk.ntnu.no/spill-test/index.html" allowfullscreen></iframe>
 </div>
 
 <div class="topbar">
@@ -160,89 +163,50 @@
 
   <!-- STEP -1: CONSENT -->
   <div class="step active" id="step-1">
-    <div class="welcome-hero">
-      <h1>Informasjonsskriv og samtykke</h1>
-      <p>Les gjennom informasjonen under og bekreft samtykket før du starter studien.</p>
-    </div>
     <div class="card">
-      <div class="card-title">Interaktive digitale fortellinger for forståelse av skiterreng · NTNU 2026</div>
-      <div style="font-size:0.93rem;line-height:1.8;color:var(--text);">
-
+      <h1>Informasjonsskriv og samtykke</h1>
+      <div style="margin-top:16px;font-size:0.92rem;line-height:1.7;color:var(--text);">
         <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Formål</h3>
-        <p style="margin-bottom:16px;">Dette er en masteroppgave ved NTNU som undersøker om interaktive digitale terrengmodeller kan gi brukere bedre forståelse av skiterreng enn tradisjonelle 2D-kart. Studien er en del av programmet Electronics Systems Design and Innovation.</p>
-
-        <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Hvorfor spørres du?</h3>
-        <p style="margin-bottom:16px;">Du inviteres til å delta fordi vi ønsker et bredt utvalg av deltakere med ulik erfaring med skiturgåing. Deltakelse er frivillig og tar omtrent 20–30 minutter.</p>
-
-        <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Hva innebærer deltakelse?</h3>
-        <p style="margin-bottom:6px;">Studien gjennomføres digitalt i fire steg:</p>
-        <ol style="margin:0 0 16px 20px;">
-          <li>Du tegner en rute på et 2D-kart og gir en kort risikovurdering</li>
-          <li>Du utforsker fritt en 3D-terrengmodell i nettleseren</li>
-          <li>Du tegner ruten på nytt og begrunner eventuelle endringer</li>
-          <li>Du svarer på et spørreskjema om opplevelsen</li>
-        </ol>
-
-        <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Data som samles inn</h3>
-        <ul style="margin:0 0 16px 20px;">
-          <li>Rutetegninger på topografisk kart (før og etter)</li>
-          <li>Skriftlige risikovurderinger og begrunnelser</li>
-          <li>Spørreskjemasvar om IDN-opplevelsen</li>
-          <li>Selvrapportert erfaringsnivå med skiturgåing</li>
-        </ul>
-
-        <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Behandling av personopplysninger</h3>
-        <p style="margin-bottom:16px;">Alle data behandles pseudonymisert. Identifikasjonsdata lagres atskilt fra forskningsdata og er kun tilgjengelig for et begrenset antall autoriserte personer. Alle opplysninger behandles konfidensielt og brukes utelukkende til forskningsformål. Personopplysninger vil ikke bli utlevert til tredjeparter. Behandlingsansvarlig institusjon er NTNU.</p>
-
-        <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Lovlig grunnlag</h3>
-        <p style="margin-bottom:16px;">Behandlingen av personopplysninger er basert på ditt samtykke, jf. GDPR artikkel 6 nr. 1 bokstav a.</p>
-
-        <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Frivillig deltakelse og dine rettigheter</h3>
-        <p style="margin-bottom:6px;">Deltakelse er frivillig. Du kan trekke deg når som helst uten å oppgi grunn, uten at dette får negative konsekvenser for deg. Du har rett til:</p>
-        <ul style="margin:0 0 16px 20px;">
-          <li>Innsyn i hvilke opplysninger som er registrert om deg</li>
-          <li>Retting av uriktige opplysninger</li>
-          <li>Sletting av dine opplysninger</li>
-          <li>Begrensning av behandlingen</li>
-          <li>Å klage til Datatilsynet (datatilsynet.no)</li>
-        </ul>
-
-        <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Hva skjer med data etter prosjektet?</h3>
-        <p style="margin-bottom:16px;">Prosjektet avsluttes ved utgangen av 2026. Innsamlede data vil deretter anonymiseres eller slettes i henhold til NTNUs retningslinjer for behandling av forskningsdata.</p>
-
-        <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;">Kontaktinformasjon</h3>
-        <ul style="margin:0 0 20px 20px;">
-          <li>Masterstudent: Odin Østvedt — odin.ostvedt@ntnu.no</li>
-          <li>Veileder: Andrew Perkis, NTNU</li>
-          <li>Personvernombud: personvern@ntnu.no</li>
-          <li>Sikt personverntjenester: personverntjenester@sikt.no</li>
-        </ul>
-
+        <p>Denne brukertesten er en del av en masteroppgave ved NTNU om hvordan interaktive terrengmodeller kan støtte forståelse av skituringterreng.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 6px;">Hvorfor spørres du?</h3>
+        <p>Du er invitert til å delta fordi du har vist interesse for skiturplanlegging eller lignende brukertesting.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 6px;">Hva innebærer deltakelse?</h3>
+        <p>Du vil navigere i en digital terrengmodell gjennom tre korte oppgaver, og deretter svare på en kort survey om opplevelsen. Testen tar om lag 15 til 20 minutter.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 6px;">Data som samles inn</h3>
+        <p>Vi logger tidsbruk og status (fullført/gitt opp) per oppgave, samt dine svar i surveyen. Ingen navn, e post eller andre personidentifiserende opplysninger samles inn.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 6px;">Behandling av personopplysninger</h3>
+        <p>All data er anonymisert og lagres uten kobling til din identitet.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 6px;">Lovlig grunnlag</h3>
+        <p>Deltakelsen er basert på ditt frivillige samtykke.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 6px;">Frivillig deltakelse og dine rettigheter</h3>
+        <p>Du kan avslutte testen når du vil, uten å angi grunn og uten konsekvenser.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 6px;">Hva skjer med data etter prosjektet?</h3>
+        <p>Data slettes eller anonymiseres permanent etter at masteroppgaven er levert og sensurert.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 6px;">Kontaktinformasjon</h3>
+        <p>Ved spørsmål, kontakt odinbo@stud.ntnu.no.</p>
       </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;align-items:flex-start;gap:14px;">
+      <label style="display:flex;gap:12px;align-items:flex-start;margin-top:24px;cursor:pointer;">
         <input type="checkbox" id="consent-check" style="width:20px;height:20px;margin-top:2px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;">
-        <label for="consent-check" style="font-size:0.93rem;font-weight:600;color:var(--text);cursor:pointer;line-height:1.6;">
-          Jeg har lest og forstått informasjonen over. Jeg samtykker frivillig til å delta i studien, og godkjenner at innsamlede data lagres pseudonymisert og brukes til forskningsformål. Jeg er kjent med at jeg kan trekke meg når som helst uten å oppgi grunn.
-        </label>
+        <span>Jeg har lest informasjonen og samtykker til å delta i brukertesten.</span>
+      </label>
+      <div class="btn-row" style="justify-content:flex-end;">
+        <button class="btn btn-primary" onclick="submitConsent()">Fortsett →</button>
       </div>
-    </div>
-    <div style="text-align:center;margin-top:24px;">
-      <button class="btn btn-primary" onclick="submitConsent()">Bekreft og start →</button>
     </div>
   </div>
 
-  <!-- STEP 0 -->
+  <!-- STEP 0: WELCOME + INNLEDENDE SPØRSMÅL -->
   <div class="step" id="step0">
     <div class="welcome-hero">
       <h1>Velkommen til brukertest</h1>
-      <p>Takk for at du hjelper meg undersøke turplanlegging i forbindelse med min masteroppgave.</p>
-      <p style="margin-top:6px;font-size:0.95rem;">Estimert tid: <strong style="color:white;">20–30 minutter</strong></p>
+      <p>Takk for at du hjelper meg undersøke terrengforståelse i forbindelse med min masteroppgave.</p>
+      <p style="margin-top:6px;font-size:0.95rem;">Estimert tid: <strong style="color:white;">15–20 minutter</strong></p>
     </div>
     <div class="step-overview">
-      <div class="overview-item"><div class="overview-num" style="background:var(--blue)">1</div><div class="overview-label">Kartoppgave før</div><div class="overview-time">~5 min</div></div>
-      <div class="overview-item"><div class="overview-num" style="background:var(--accent)">2</div><div class="overview-label">Terrengmodellen</div><div class="overview-time">~10 min</div></div>
-      <div class="overview-item"><div class="overview-num" style="background:var(--green)">3</div><div class="overview-label">Kartoppgave etter</div><div class="overview-time">~5 min</div></div>
-      <div class="overview-item"><div class="overview-num" style="background:var(--orange)">4</div><div class="overview-label">Survey</div><div class="overview-time">~5–10 min</div></div>
+      <div class="overview-item"><div class="overview-num" style="background:var(--blue)">1</div><div class="overview-label">Bli kjent med modellen</div><div class="overview-time">~3 min</div></div>
+      <div class="overview-item"><div class="overview-num" style="background:var(--accent)">2</div><div class="overview-label">Finn toppen</div><div class="overview-time">~5 min</div></div>
+      <div class="overview-item"><div class="overview-num" style="background:var(--green)">3</div><div class="overview-label">Finn dalen</div><div class="overview-time">~5 min</div></div>
+      <div class="overview-item"><div class="overview-num" style="background:var(--orange)">4</div><div class="overview-label">Survey</div><div class="overview-time">~5 min</div></div>
     </div>
     <div class="card">
       <div class="card-title">Din erfaring</div>
@@ -257,6 +221,16 @@
           <option value="ekspert">Ekspert / guide</option>
         </select>
       </div>
+      <div class="survey-q" style="margin-bottom:0;">
+        <label class="survey-label">Hvor ofte bruker du topografiske kart (høydekurver, terrengformer) til tur eller skiturplanlegging i løpet av et år?</label>
+        <select id="map-exp-level">
+          <option value="">Velg...</option>
+          <option value="aldri">Aldri</option>
+          <option value="under5">Sjeldnere enn 5 ganger i året</option>
+          <option value="5til15">5 til 15 ganger i året</option>
+          <option value="over15">Mer enn 15 ganger i året</option>
+        </select>
+      </div>
     </div>
     <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:0.9rem;color:var(--muted);">
       🔒 Alle svar er anonyme. Du får en tilfeldig ID. Ingen kan knytte svarene dine til deg.
@@ -266,43 +240,13 @@
     </div>
   </div>
 
-  <!-- STEP 1 -->
+  <!-- STEP 1: OPPGAVE 1 - BLI KJENT MED TERRENGMODELLEN (TUTORIAL) -->
   <div class="step" id="step1">
     <div class="step-header">
       <div class="step-badge" style="background:var(--blue)">1</div>
       <div>
-        <div class="step-title">Kartoppgave — før terrengmodellen</div>
-        <div class="step-desc">Tegn ruten du ville valgt basert på 2D-kartet alene</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Kart — Steindalsnosi</div>
-      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;">Du planlegger en topptur til Steindalsnosi. Tegn ruten du ville valgt fra startpunktet til toppen.</p>
-      <div class="canvas-toolbar">
-        <div class="color-indicator red"><div class="color-dot" style="background:var(--red)"></div>Tegner i rødt</div>
-        <button class="tool-btn" onclick="undoCanvas1()">↩ Angre</button>
-        <button class="tool-btn" onclick="clearCanvas1()">🗑 Slett alt</button>
-      </div>
-      <div class="canvas-wrap"><canvas id="canvas1"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Din begrunnelse</div>
-      <label class="survey-label">Beskriv kort hvorfor du valgte denne ruten (2–3 setninger). Hva tok du hensyn til?</label>
-      <textarea id="reason-before" autocomplete="off" placeholder="Jeg valgte denne ruten fordi..."></textarea>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="goStep(0)">← Tilbake</button>
-      <button class="btn btn-primary" onclick="nextStep1()">Gå til terrengmodellen →</button>
-    </div>
-  </div>
-
-  <!-- STEP 2 -->
-  <div class="step" id="step2">
-    <div class="step-header">
-      <div class="step-badge" style="background:var(--accent)">2</div>
-      <div>
-        <div class="step-title">Naviger i terrengmodellen</div>
-        <div class="step-desc">Utforsk terrenget i 3D som om du planlegger turen</div>
+        <div class="step-title">Oppgave 1: Bli kjent med terrengmodellen</div>
+        <div class="step-desc">Utforsk fritt og lær deg kontrollene, ingen tidtaking i denne oppgaven</div>
       </div>
     </div>
     <div class="controls-grid">
@@ -311,171 +255,250 @@
       <div class="control-item"><div class="control-key">Mus</div><div class="control-desc">Se opp, ned og til siden</div></div>
       <div class="control-item"><div class="control-key">ESC</div><div class="control-desc">Slipp musen / lukk modellen</div></div>
     </div>
-
     <div class="info-combined">
-      <p><strong>🎿 Din oppgave: Utforsk terrenget som om du planlegger en topptur til toppen.</strong></p>
+      <p><strong>🎿 Din oppgave: bli kjent med terrengmodellen.</strong></p>
       <ul>
-        <li>Gå linjen du tegnet opp i forrige steg.</li>
-        <li>Hvor er det bratt?</li>
-        <li>Hvor er det eksponert for snøskred?</li>
-        <li>Hvilke linjer ser trygge ut?</li>
+        <li>Øv på å bevege deg rundt med tastene og se deg rundt med musen.</li>
+        <li>Det er ingen riktig eller gal måte å gjøre dette på, bruk gjerne 1 til 2 minutter.</li>
       </ul>
-      <p style="margin-top:12px;">⏰ Bruk minimum 10 minutter i modellen før du går videre. Utforsk hele terrenget. Trykk ESC for å sleppe musen, og lukk med knappen i toppen.</p>
+      <p style="margin-top:12px;">Trykk ESC for å slippe musen, og lukk med knappen i toppen når du er klar.</p>
     </div>
-
     <button class="terrain-open-btn" onclick="openFullscreen()">
       🏔️ Åpne terrengmodellen i fullskjerm — trykk her
     </button>
-
     <div class="btn-row">
-      <button class="btn btn-secondary" onclick="goStep(1)">← Tilbake</button>
-      <button class="btn btn-primary" onclick="goStep(3)">Jeg er ferdig med terrengmodellen →</button>
+      <button class="btn btn-secondary" onclick="goStep(0)">← Tilbake</button>
+      <button class="btn btn-primary" onclick="goStep(2)">Jeg er klar, gå videre →</button>
     </div>
   </div>
 
-  <!-- STEP 3 -->
+  <!-- STEP 2: OPPGAVE 2 - FINN TOPPEN -->
+  <div class="step" id="step2">
+    <div class="step-header">
+      <div class="step-badge" style="background:var(--accent)">2</div>
+      <div>
+        <div class="step-title">Oppgave 2: Finn toppen</div>
+        <div class="step-desc">Toppen er markert på kartet under. Finn frem til samme sted i terrengmodellen.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Kart — målpunkt: toppen</div>
+      <div class="map-ref-wrap">
+        <img src="/skitest/app.cgi/kart.png" alt="Kart med markert topp">
+        <!-- TODO: juster posisjon (left/top i prosent) til faktisk koordinat for toppen -->
+        <div class="map-marker" style="left:42%; top:32%;"></div>
+        <div class="map-marker-label" style="left:42%; top:32%;">Topp</div>
+      </div>
+    </div>
+    <div class="info-combined">
+      <p><strong>🎿 Din oppgave: naviger til toppen markert på kartet over.</strong></p>
+      <ul>
+        <li>Trykk "Ferdig" når du tror du har nådd riktig sted.</li>
+        <li>Trykk "Jeg gir opp" hvis du ikke finner frem.</li>
+      </ul>
+    </div>
+    <button class="terrain-open-btn" onclick="openFullscreen()">
+      🏔️ Åpne terrengmodellen i fullskjerm — trykk her
+    </button>
+    <div class="timer-display" id="timer-topp">Tid: 0:00</div>
+    <div class="task-btn-row">
+      <button class="btn btn-primary" onclick="finishTask('topp','finished',3)">✓ Ferdig</button>
+      <button class="btn btn-give-up" onclick="finishTask('topp','gaveup',3)">🏳 Jeg gir opp</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: OPPGAVE 3 - FINN DALEN -->
   <div class="step" id="step3">
     <div class="step-header">
       <div class="step-badge" style="background:var(--green)">3</div>
       <div>
-        <div class="step-title">Kartoppgave — etter terrengmodellen</div>
-        <div class="step-desc">Tegn ruten på nytt etter opplevelsen i 3D</div>
+        <div class="step-title">Oppgave 3: Finn dalen</div>
+        <div class="step-desc">Dalen er markert på kartet under. Finn frem til samme sted i terrengmodellen.</div>
       </div>
-    </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:0.9rem;color:var(--muted);">
-      Det er helt greit om ruten er den samme som før. Vi er interessert i din ærlige vurdering.
     </div>
     <div class="card">
-      <div class="card-title">Kart — Steindalsnosi</div>
-      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;">Tegn ruten du nå ville valgt etter å ha sett terrenget i 3D.</p>
-      <div class="canvas-toolbar">
-        <div class="color-indicator green"><div class="color-dot" style="background:var(--green)"></div>Tegner i grønt</div>
-        <button class="tool-btn" onclick="undoCanvas2()">↩ Angre</button>
-        <button class="tool-btn" onclick="clearCanvas2()">🗑 Slett alt</button>
-      </div>
-      <div class="canvas-wrap"><canvas id="canvas2"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Endringer og refleksjon</div>
-      <div class="survey-q">
-        <label class="survey-label">Endret du ruten din etter terrengmodellen?</label>
-        <div class="radio-group">
-          <label><input type="radio" name="changed" value="ja"><span>Ja, jeg endret ruten</span></label>
-          <label><input type="radio" name="changed" value="delvis"><span>Delvis endret</span></label>
-          <label><input type="radio" name="changed" value="nei"><span>Nei, samme rute</span></label>
-        </div>
-      </div>
-      <div class="survey-q">
-        <label class="survey-label">Beskriv hva som eventuelt er endret og hvorfor. Hva overrasket deg i terrengmodellen?</label>
-        <textarea id="reason-after" autocomplete="off" placeholder="Etter å ha sett terrenget i 3D valgte jeg å..."></textarea>
+      <div class="card-title">Kart — målpunkt: dalen</div>
+      <div class="map-ref-wrap">
+        <img src="/skitest/app.cgi/kart.png" alt="Kart med markert dal">
+        <!-- TODO: juster posisjon (left/top i prosent) til faktisk koordinat for dalen -->
+        <div class="map-marker" style="left:58%; top:61%;"></div>
+        <div class="map-marker-label" style="left:58%; top:61%;">Dal</div>
       </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="goStep(2)">← Tilbake</button>
-      <button class="btn btn-primary" onclick="nextStep3()">Gå til surveyen →</button>
+    <div class="info-combined">
+      <p><strong>🎿 Din oppgave: naviger til dalen markert på kartet over.</strong></p>
+      <ul>
+        <li>Trykk "Ferdig" når du tror du har nådd riktig sted.</li>
+        <li>Trykk "Jeg gir opp" hvis du ikke finner frem.</li>
+      </ul>
+    </div>
+    <button class="terrain-open-btn" onclick="openFullscreen()">
+      🏔️ Åpne terrengmodellen i fullskjerm — trykk her
+    </button>
+    <div class="timer-display" id="timer-dal">Tid: 0:00</div>
+    <div class="task-btn-row">
+      <button class="btn btn-primary" onclick="finishTask('dal','finished',4)">✓ Ferdig</button>
+      <button class="btn btn-give-up" onclick="finishTask('dal','gaveup',4)">🏳 Jeg gir opp</button>
     </div>
   </div>
 
-  <!-- STEP 4 -->
+  <!-- STEP 4: SURVEY -->
   <div class="step" id="step4">
     <div class="step-header">
       <div class="step-badge" style="background:var(--orange)">4</div>
       <div><div class="step-title">Survey</div><div class="step-desc">Siste steg — svar på spørsmål om opplevelsen</div></div>
     </div>
+
     <div class="card">
-      <div class="card-title">Tilstedeværelse</div>
+      <div class="card-title">Navigasjon og brukervennlighet</div>
       <div class="survey-q">
-        <label class="survey-label">Jeg følte meg til stede i det digitale terrenget</label>
+        <label class="survey-label">Det var enkelt å bevege seg rundt ved hjelp av taster og kontroller i terrengmodellen</label>
         <div class="likert">
-          <label><input type="radio" name="s1" value="1"><span>1<br>Helt uenig</span></label>
-          <label><input type="radio" name="s1" value="2"><span>2</span></label>
-          <label><input type="radio" name="s1" value="3"><span>3<br>Nøytral</span></label>
-          <label><input type="radio" name="s1" value="4"><span>4</span></label>
-          <label><input type="radio" name="s1" value="5"><span>5<br>Helt enig</span></label>
-        </div>
-      </div>
-      <div class="survey-q">
-        <label class="survey-label">Terrenget føltes realistisk nok til å danne seg et inntrykk av faktiske forhold</label>
-        <div class="likert">
-          <label><input type="radio" name="s2" value="1"><span>1<br>Helt uenig</span></label>
-          <label><input type="radio" name="s2" value="2"><span>2</span></label>
-          <label><input type="radio" name="s2" value="3"><span>3<br>Nøytral</span></label>
-          <label><input type="radio" name="s2" value="4"><span>4</span></label>
-          <label><input type="radio" name="s2" value="5"><span>5<br>Helt enig</span></label>
+          <label><input type="radio" name="nav1" value="1"><span>1<br>Helt uenig</span></label>
+          <label><input type="radio" name="nav1" value="2"><span>2</span></label>
+          <label><input type="radio" name="nav1" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="nav1" value="4"><span>4</span></label>
+          <label><input type="radio" name="nav1" value="5"><span>5<br>Helt enig</span></label>
         </div>
       </div>
     </div>
+
     <div class="card">
-      <div class="card-title">Terrengforståelse</div>
+      <div class="card-title">Oppgavespesifikke spørsmål</div>
       <div class="survey-q">
-        <label class="survey-label">Terrengmodellen ga meg bedre forståelse av snøskredfaren i terrenget enn kartet alene</label>
+        <label class="survey-label">Det var lett å finne riktig vei til målet i oppgave #1 Topp</label>
         <div class="likert">
-          <label><input type="radio" name="s3" value="1"><span>1<br>Helt uenig</span></label>
-          <label><input type="radio" name="s3" value="2"><span>2</span></label>
-          <label><input type="radio" name="s3" value="3"><span>3<br>Nøytral</span></label>
-          <label><input type="radio" name="s3" value="4"><span>4</span></label>
-          <label><input type="radio" name="s3" value="5"><span>5<br>Helt enig</span></label>
+          <label><input type="radio" name="task_topp_way" value="1"><span>1<br>Helt uenig</span></label>
+          <label><input type="radio" name="task_topp_way" value="2"><span>2</span></label>
+          <label><input type="radio" name="task_topp_way" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="task_topp_way" value="4"><span>4</span></label>
+          <label><input type="radio" name="task_topp_way" value="5"><span>5<br>Helt enig</span></label>
         </div>
       </div>
       <div class="survey-q">
-        <label class="survey-label">Opplevelsen hjalp meg å vurdere mine egne ferdigheter opp mot kravene i terrenget</label>
+        <label class="survey-label">Det var lett å finne riktig vei til målet i oppgave #2 Dal</label>
         <div class="likert">
-          <label><input type="radio" name="s4" value="1"><span>1<br>Helt uenig</span></label>
-          <label><input type="radio" name="s4" value="2"><span>2</span></label>
-          <label><input type="radio" name="s4" value="3"><span>3<br>Nøytral</span></label>
-          <label><input type="radio" name="s4" value="4"><span>4</span></label>
-          <label><input type="radio" name="s4" value="5"><span>5<br>Helt enig</span></label>
+          <label><input type="radio" name="task_dal_way" value="1"><span>1<br>Helt uenig</span></label>
+          <label><input type="radio" name="task_dal_way" value="2"><span>2</span></label>
+          <label><input type="radio" name="task_dal_way" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="task_dal_way" value="4"><span>4</span></label>
+          <label><input type="radio" name="task_dal_way" value="5"><span>5<br>Helt enig</span></label>
         </div>
       </div>
       <div class="survey-q">
-        <label class="survey-label">Terrengmodellen påvirket hvordan jeg tenker på rutevalg og sikkerhet</label>
+        <label class="survey-label">Hvor sikker var du på at du fant riktig sted i oppgave #1 Topp?</label>
         <div class="likert">
-          <label><input type="radio" name="s5" value="1"><span>1<br>Helt uenig</span></label>
-          <label><input type="radio" name="s5" value="2"><span>2</span></label>
-          <label><input type="radio" name="s5" value="3"><span>3<br>Nøytral</span></label>
-          <label><input type="radio" name="s5" value="4"><span>4</span></label>
-          <label><input type="radio" name="s5" value="5"><span>5<br>Helt enig</span></label>
+          <label><input type="radio" name="task_topp_sure" value="1"><span>1<br>Helt usikker</span></label>
+          <label><input type="radio" name="task_topp_sure" value="2"><span>2</span></label>
+          <label><input type="radio" name="task_topp_sure" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="task_topp_sure" value="4"><span>4</span></label>
+          <label><input type="radio" name="task_topp_sure" value="5"><span>5<br>Helt sikker</span></label>
+        </div>
+      </div>
+      <div class="survey-q">
+        <label class="survey-label">Hvor sikker var du på at du fant riktig sted i oppgave #2 Dal?</label>
+        <div class="likert">
+          <label><input type="radio" name="task_dal_sure" value="1"><span>1<br>Helt usikker</span></label>
+          <label><input type="radio" name="task_dal_sure" value="2"><span>2</span></label>
+          <label><input type="radio" name="task_dal_sure" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="task_dal_sure" value="4"><span>4</span></label>
+          <label><input type="radio" name="task_dal_sure" value="5"><span>5<br>Helt sikker</span></label>
         </div>
       </div>
     </div>
+
     <div class="card">
-      <div class="card-title">Totalopplevelse</div>
+      <div class="card-title">Sammenligning med 2D kart</div>
       <div class="survey-q">
-        <label class="survey-label">Sammenlignet med et vanlig 2D-kart, er terrengmodellen bedre for å forstå toppturterreng?</label>
+        <label class="survey-label">Det var lett å forstå hvor jeg var i terrengmodellen i forhold til kartet</label>
         <div class="likert">
-          <label><input type="radio" name="s6" value="1"><span>Mye verre</span></label>
-          <label><input type="radio" name="s6" value="2"><span>Litt verre</span></label>
-          <label><input type="radio" name="s6" value="3"><span>Omtrent likt</span></label>
-          <label><input type="radio" name="s6" value="4"><span>Litt bedre</span></label>
-          <label><input type="radio" name="s6" value="5"><span>Mye bedre</span></label>
+          <label><input type="radio" name="map_orient" value="1"><span>1<br>Helt uenig</span></label>
+          <label><input type="radio" name="map_orient" value="2"><span>2</span></label>
+          <label><input type="radio" name="map_orient" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="map_orient" value="4"><span>4</span></label>
+          <label><input type="radio" name="map_orient" value="5"><span>5<br>Helt enig</span></label>
         </div>
       </div>
       <div class="survey-q">
-        <label class="survey-label">Jeg ville brukt et slikt verktøy igjen for å planlegge en topptur</label>
+        <label class="survey-label">Sammenlignet med et vanlig 2D kart, hvor mye bedre eller dårligere følte du at denne modellen ga deg forståelse av terrenget?</label>
         <div class="likert">
-          <label><input type="radio" name="s7" value="1"><span>1<br>Helt uenig</span></label>
-          <label><input type="radio" name="s7" value="2"><span>2</span></label>
-          <label><input type="radio" name="s7" value="3"><span>3<br>Nøytral</span></label>
-          <label><input type="radio" name="s7" value="4"><span>4</span></label>
-          <label><input type="radio" name="s7" value="5"><span>5<br>Helt enig</span></label>
+          <label><input type="radio" name="map_compare" value="1"><span>Mye dårligere</span></label>
+          <label><input type="radio" name="map_compare" value="2"><span>Litt dårligere</span></label>
+          <label><input type="radio" name="map_compare" value="3"><span>Omtrent likt</span></label>
+          <label><input type="radio" name="map_compare" value="4"><span>Litt bedre</span></label>
+          <label><input type="radio" name="map_compare" value="5"><span>Mye bedre</span></label>
         </div>
       </div>
     </div>
+
     <div class="card">
-      <div class="card-title">Åpne spørsmål</div>
-      <div class="survey-q">
-        <label class="survey-label">Hva var mest verdifullt med terrengmodell-opplevelsen?</label>
-        <textarea id="open1" autocomplete="off" placeholder="Det jeg fant mest nyttig var..."></textarea>
-      </div>
-      <div class="survey-q">
-        <label class="survey-label">Hva overrasket deg mest i terrenget (sammenlignet med kartet)?</label>
-        <textarea id="open2" autocomplete="off" placeholder="Jeg ble overrasket over..."></textarea>
-      </div>
-      <div class="survey-q">
-        <label class="survey-label">Andre kommentarer eller forslag til forbedringer?</label>
-        <textarea id="open3" autocomplete="off" required="false" placeholder="Valgfritt..."></textarea>
+      <div class="card-title">Presence</div>
+      <div class="survey-q" style="margin-bottom:0;">
+        <label class="survey-label">Jeg fikk en følelse av å bevege meg i et ekte terreng, ikke bare en digital modell</label>
+        <div class="likert">
+          <label><input type="radio" name="presence1" value="1"><span>1<br>Helt uenig</span></label>
+          <label><input type="radio" name="presence1" value="2"><span>2</span></label>
+          <label><input type="radio" name="presence1" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="presence1" value="4"><span>4</span></label>
+          <label><input type="radio" name="presence1" value="5"><span>5<br>Helt enig</span></label>
+        </div>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-title">Believability</div>
+      <div class="survey-q">
+        <label class="survey-label">Jeg oppfattet terrengmodellen som en realistisk fremstilling av det virkelige terrenget</label>
+        <div class="likert">
+          <label><input type="radio" name="believe1" value="1"><span>1<br>Helt uenig</span></label>
+          <label><input type="radio" name="believe1" value="2"><span>2</span></label>
+          <label><input type="radio" name="believe1" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="believe1" value="4"><span>4</span></label>
+          <label><input type="radio" name="believe1" value="5"><span>5<br>Helt enig</span></label>
+        </div>
+      </div>
+      <div class="survey-q">
+        <label class="survey-label">Jeg oppfattet terrengmodellen som en pålitelig fremstilling av det virkelige terrenget</label>
+        <div class="likert">
+          <label><input type="radio" name="believe2" value="1"><span>1<br>Helt uenig</span></label>
+          <label><input type="radio" name="believe2" value="2"><span>2</span></label>
+          <label><input type="radio" name="believe2" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="believe2" value="4"><span>4</span></label>
+          <label><input type="radio" name="believe2" value="5"><span>5<br>Helt enig</span></label>
+        </div>
+      </div>
+      <div class="survey-q" style="margin-bottom:0;">
+        <label class="survey-label">Jeg ville stolt på denne modellen som grunnlag for å planlegge en faktisk skitur</label>
+        <div class="likert">
+          <label><input type="radio" name="believe3" value="1"><span>1<br>Helt uenig</span></label>
+          <label><input type="radio" name="believe3" value="2"><span>2</span></label>
+          <label><input type="radio" name="believe3" value="3"><span>3<br>Nøytral</span></label>
+          <label><input type="radio" name="believe3" value="4"><span>4</span></label>
+          <label><input type="radio" name="believe3" value="5"><span>5<br>Helt enig</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Åpent avsluttende spørsmål</div>
+      <div class="survey-q">
+        <label class="survey-label">Er det noe ved terrengmodellen som var vanskelig?</label>
+        <textarea id="open_difficult" autocomplete="off" placeholder="Valgfritt..."></textarea>
+      </div>
+      <div class="survey-q">
+        <label class="survey-label">Er det noe ved terrengmodellen som var enkelt?</label>
+        <textarea id="open_easy" autocomplete="off" placeholder="Valgfritt..."></textarea>
+      </div>
+      <div class="survey-q" style="margin-bottom:0;">
+        <label class="survey-label">Har du vært på Fannaråken før?</label>
+        <div class="radio-group">
+          <label><input type="radio" name="area_familiar" value="ja"><span>Ja</span></label>
+          <label><input type="radio" name="area_familiar" value="nei"><span>Nei</span></label>
+          <label><input type="radio" name="area_familiar" value="usikker"><span>Usikker</span></label>
+        </div>
+      </div>
+    </div>
+
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(3)">← Tilbake</button>
       <button class="btn btn-green" id="submit-btn" onclick="submitAll()">✓ Send inn svarene mine</button>
@@ -485,20 +508,26 @@
   <!-- DONE -->
   <div class="step" id="step5">
     <div class="done-screen">
-      <div class="done-icon">🎿</div>
+      <div class="done-icon">🎉</div>
       <h2>Tusen takk!</h2>
-      <p>Svarene dine er registrert og bidrar direkte til forskningen i masteroppgaven.</p>
+      <p>Svarene dine er registrert og bidrar direkte til masteroppgaven min om terrengforståelse i skiturplanlegging.</p>
       <div class="pid-badge" id="done-pid"></div>
-      <p style="margin-top:16px;">Du kan lukke denne fanen nå.<br>Spørsmål? <strong>odinbo@stud.ntnu.no</strong></p>
     </div>
   </div>
 
 </div>
 
 <script>
-const MAP_URL = '/skitest/app.cgi/kart.png';
 let pid = null;
 
+// taskData holder tid, status og avstand (placeholder) per oppgave.
+// distance_m er null helt til terrengmodellen (Unity) sender ekte data.
+let taskData = {
+  topp: { time_seconds: null, status: null, distance_m: null },
+  dal:  { time_seconds: null, status: null, distance_m: null }
+};
+let taskStartTimes = {};
+let timerIntervals = {};
 
 function submitConsent() {
   if (!document.getElementById('consent-check').checked) {
@@ -511,7 +540,9 @@ function submitConsent() {
 
 async function startTest() {
   const exp = document.getElementById('exp-level').value;
-  if (!exp) { alert('Velg erfaringsnivå først.'); return; }
+  const mapExp = document.getElementById('map-exp-level').value;
+  if (!exp) { alert('Velg erfaringsnivå for skigåing først.'); return; }
+  if (!mapExp) { alert('Velg hvor ofte du bruker topografiske kart.'); return; }
   try {
     const r = await fetch('/skitest/app.cgi/api/start', {method:'POST'});
     const d = await r.json();
@@ -530,16 +561,43 @@ function goStep(n) {
     if (i === n) d.classList.add('active');
   });
   window.scrollTo({top:0, behavior:'smooth'});
+
+  // Start tidtaking automatisk for oppgave 2 (topp) og oppgave 3 (dal)
+  if (n === 2) startTaskTimer('topp');
+  if (n === 3) startTaskTimer('dal');
 }
 
-function nextStep1() {
-  if (!document.getElementById('reason-before').value.trim()) { alert('Skriv en kort begrunnelse for rutevalget ditt.'); return; }
-  goStep(2);
+function startTaskTimer(taskKey) {
+  taskStartTimes[taskKey] = Date.now();
+  if (timerIntervals[taskKey]) clearInterval(timerIntervals[taskKey]);
+  const display = document.getElementById('timer-' + taskKey);
+  timerIntervals[taskKey] = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - taskStartTimes[taskKey]) / 1000);
+    const m = Math.floor(elapsed / 60), s = elapsed % 60;
+    if (display) display.textContent = 'Tid: ' + m + ':' + String(s).padStart(2,'0');
+  }, 1000);
 }
-function nextStep3() {
-  if (!document.querySelector('input[name="changed"]:checked')) { alert('Svar på om du endret ruten.'); return; }
-  goStep(4);
+
+function finishTask(taskKey, status, nextStep) {
+  if (timerIntervals[taskKey]) clearInterval(timerIntervals[taskKey]);
+  const start = taskStartTimes[taskKey] || Date.now();
+  const elapsedSeconds = Math.round((Date.now() - start) / 1000);
+  taskData[taskKey] = {
+    time_seconds: elapsedSeconds,
+    status: status, // "finished" eller "gaveup"
+    distance_m: taskData[taskKey].distance_m // beholder ev. verdi fra Unity, se postMessage-lytter under
+  };
+  goStep(nextStep);
 }
+
+// Minimal lytter for fremtidig kobling til Unity terrengmodell.
+// Forventet meldingsformat fra Unity (via window.parent.postMessage):
+// { type: "terrain-task-result", task: "topp" | "dal", distance_m: <tall> }
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'terrain-task-result' && taskData[e.data.task]) {
+    taskData[e.data.task].distance_m = e.data.distance_m;
+  }
+});
 
 function openFullscreen() {
   document.getElementById('terrain-fs').classList.add('active');
@@ -551,80 +609,20 @@ function openFullscreen() {
 function closeFullscreen() { document.getElementById('terrain-fs').classList.remove('active'); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
 
-// CANVAS
-const c1 = document.getElementById('canvas1');
-const ctx1 = c1.getContext('2d');
-const c2 = document.getElementById('canvas2');
-const ctx2 = c2.getContext('2d');
-let history1=[], history2=[], drawing1=false, drawing2=false;
-
-function loadMap() {
-  const mapImg = new Image();
-  mapImg.onload = function() {
-    c1.width = mapImg.naturalWidth; c1.height = mapImg.naturalHeight;
-    c2.width = mapImg.naturalWidth; c2.height = mapImg.naturalHeight;
-    ctx1.drawImage(mapImg, 0, 0);
-    ctx2.drawImage(mapImg, 0, 0);
-    window._mapImg = mapImg;
-  };
-  mapImg.onerror = function() {
-    console.error('Kart kunne ikke lastes fra:', MAP_URL);
-    c1.width=1200; c1.height=780; c2.width=1200; c2.height=780;
-    [ctx1,ctx2].forEach(ctx => {
-      ctx.fillStyle='#dde8d0'; ctx.fillRect(0,0,1200,780);
-      ctx.fillStyle='#555'; ctx.font='bold 18px sans-serif'; ctx.textAlign='center';
-      ctx.fillText('Kartet kunne ikke lastes — prøv å laste siden på nytt', 600, 390);
-    });
-  };
-  mapImg.src = MAP_URL + '?t=' + Date.now();
-}
-window.addEventListener('DOMContentLoaded', loadMap);
-
-function getPos(canvas, e) {
-  const r = canvas.getBoundingClientRect();
-  const src = e.touches ? e.touches[0] : e;
-  return { x:(src.clientX-r.left)*(canvas.width/r.width), y:(src.clientY-r.top)*(canvas.height/r.height) };
-}
-
-c1.addEventListener('mousedown', e => { drawing1=true; history1.push(ctx1.getImageData(0,0,c1.width,c1.height)); const p=getPos(c1,e); ctx1.beginPath(); ctx1.moveTo(p.x,p.y); ctx1.strokeStyle='#C0392B'; ctx1.lineWidth=5; ctx1.lineCap='round'; ctx1.lineJoin='round'; });
-c1.addEventListener('mousemove', e => { if(!drawing1) return; const p=getPos(c1,e); ctx1.lineTo(p.x,p.y); ctx1.stroke(); });
-c1.addEventListener('mouseup', ()=>{ drawing1=false; ctx1.beginPath(); });
-c1.addEventListener('mouseleave', ()=>{ drawing1=false; });
-c1.addEventListener('touchstart', e=>{ e.preventDefault(); drawing1=true; history1.push(ctx1.getImageData(0,0,c1.width,c1.height)); const p=getPos(c1,e); ctx1.beginPath(); ctx1.moveTo(p.x,p.y); ctx1.strokeStyle='#C0392B'; ctx1.lineWidth=5; ctx1.lineCap='round'; ctx1.lineJoin='round'; },{passive:false});
-c1.addEventListener('touchmove', e=>{ e.preventDefault(); if(!drawing1) return; const p=getPos(c1,e); ctx1.lineTo(p.x,p.y); ctx1.stroke(); },{passive:false});
-c1.addEventListener('touchend', ()=>{ drawing1=false; });
-
-c2.addEventListener('mousedown', e=>{ drawing2=true; history2.push(ctx2.getImageData(0,0,c2.width,c2.height)); const p=getPos(c2,e); ctx2.beginPath(); ctx2.moveTo(p.x,p.y); ctx2.strokeStyle='#2D7D46'; ctx2.lineWidth=5; ctx2.lineCap='round'; ctx2.lineJoin='round'; });
-c2.addEventListener('mousemove', e=>{ if(!drawing2) return; const p=getPos(c2,e); ctx2.lineTo(p.x,p.y); ctx2.stroke(); });
-c2.addEventListener('mouseup', ()=>{ drawing2=false; ctx2.beginPath(); });
-c2.addEventListener('mouseleave', ()=>{ drawing2=false; });
-c2.addEventListener('touchstart', e=>{ e.preventDefault(); drawing2=true; history2.push(ctx2.getImageData(0,0,c2.width,c2.height)); const p=getPos(c2,e); ctx2.beginPath(); ctx2.moveTo(p.x,p.y); ctx2.strokeStyle='#2D7D46'; ctx2.lineWidth=5; ctx2.lineCap='round'; ctx2.lineJoin='round'; },{passive:false});
-c2.addEventListener('touchmove', e=>{ e.preventDefault(); if(!drawing2) return; const p=getPos(c2,e); ctx2.lineTo(p.x,p.y); ctx2.stroke(); },{passive:false});
-c2.addEventListener('touchend', ()=>{ drawing2=false; });
-
-function undoCanvas1() { if(history1.length>0) ctx1.putImageData(history1.pop(),0,0); }
-function undoCanvas2() { if(history2.length>0) ctx2.putImageData(history2.pop(),0,0); }
-function clearCanvas1() { history1=[]; ctx1.clearRect(0,0,c1.width,c1.height); if(window._mapImg) ctx1.drawImage(window._mapImg,0,0); }
-function clearCanvas2() { history2=[]; ctx2.clearRect(0,0,c2.width,c2.height); if(window._mapImg) ctx2.drawImage(window._mapImg,0,0); }
-
 async function submitAll() {
-  const required = ['s1','s2','s3','s4','s5','s6','s7'];
+  const required = ['nav1','task_topp_way','task_dal_way','task_topp_sure','task_dal_sure','map_orient','map_compare','presence1','believe1','believe2','believe3','area_familiar'];
   for (const name of required) {
     if (!document.querySelector(`input[name="${name}"]:checked`)) { alert('Vennligst svar på alle spørsmålene i surveyen.'); return; }
   }
   const survey = {};
   required.forEach(n => { survey[n] = document.querySelector(`input[name="${n}"]:checked`).value; });
-  survey.open1 = document.getElementById('open1').value;
-  survey.open2 = document.getElementById('open2').value;
-  survey.open3 = document.getElementById('open3').value;
+  survey.open_difficult = document.getElementById('open_difficult').value;
+  survey.open_easy = document.getElementById('open_easy').value;
 
   const payload = {
-    experience: document.getElementById('exp-level').value,
-    route_before: c1.toDataURL('image/png'),
-    route_before_reason: document.getElementById('reason-before').value,
-    route_after: c2.toDataURL('image/png'),
-    route_after_reason: document.getElementById('reason-after').value,
-    route_changed: document.querySelector('input[name="changed"]:checked')?.value,
+    ski_experience: document.getElementById('exp-level').value,
+    map_experience: document.getElementById('map-exp-level').value,
+    tasks: taskData,
     survey
   };
 
