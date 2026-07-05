@@ -3,20 +3,12 @@ import json, os, uuid, hashlib
 from datetime import datetime
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
-
-SECRET_KEY = os.environ.get("SECRET_KEY")
-ADMIN_PW_HASH = os.environ.get("ADMIN_PW_HASH")
-
-if not SECRET_KEY or not ADMIN_PW_HASH:
-    raise RuntimeError(
-        "Miljovariablene SECRET_KEY og ADMIN_PW_HASH ma vaere satt. "
-        "Se README/instruks for hvordan du setter disse pa serveren."
-    )
-
-app.secret_key = SECRET_KEY
+app.secret_key = os.environ.get("SECRET_KEY", "skitest-ntnu-2026-odin")
 
 DATA_FILE = "data/responses.json"
 os.makedirs("data", exist_ok=True)
+
+ADMIN_PW_HASH = hashlib.sha256(b"ntnu2026odin").hexdigest()
 
 def load_data():
     if not os.path.exists(DATA_FILE):
