@@ -72,6 +72,15 @@
   .map-ref-wrap img { display:block; width:100%; height:auto; }
   .map-marker { position:absolute; width:18px; height:18px; border-radius:50%; background:var(--red); border:3px solid white; box-shadow:0 0 0 2px var(--red); transform:translate(-50%,-50%); }
   .map-marker-label { position:absolute; background:var(--navy); color:white; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:6px; transform:translate(-50%,-140%); white-space:nowrap; }
+  .map-marker-start { position:absolute; width:16px; height:16px; border-radius:50%; background:var(--blue); border:3px solid white; box-shadow:0 0 0 2px var(--blue); transform:translate(-50%,-50%); }
+  .map-marker-start-label { position:absolute; background:var(--blue); color:white; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:6px; transform:translate(-50%,-140%); white-space:nowrap; }
+
+  /* OVERLAY: tid + ferdig/gi opp, vist oppå terrengmodellen i fullskjerm */
+  .terrain-task-overlay { position:absolute; bottom:28px; left:50%; transform:translateX(-50%); z-index:20; background:rgba(26,60,94,0.92); border-radius:16px; padding:16px 20px; display:none; flex-direction:column; align-items:center; gap:12px; box-shadow:0 6px 24px rgba(0,0,0,0.3); min-width:320px; }
+  .terrain-task-overlay.visible { display:flex; }
+  .terrain-task-overlay .overlay-timer { font-family:monospace; font-size:1.3rem; font-weight:700; color:white; }
+  .terrain-task-overlay .overlay-btn-row { display:flex; gap:10px; width:100%; }
+  .terrain-task-overlay .overlay-btn-row .btn { flex:1; justify-content:center; padding:12px 14px; }
 
   /* TASK TIMER + STATUS BUTTONS */
   .timer-display { font-family:monospace; font-size:1.4rem; font-weight:700; color:var(--navy); text-align:center; padding:12px; background:var(--card); border-radius:10px; margin:20px 0; border:1px solid var(--border); }
@@ -135,12 +144,19 @@
 <div class="terrain-fullscreen" id="terrain-fs">
   <div class="terrain-fs-bar">
     <div class="keys">
-      <span><span class="fs-key">W A S D</span> Beveg deg</span>
-      <span><span class="fs-key">Piltaster</span> Alternativ</span>
-      <span><span class="fs-key">Mus</span> Se rundt</span>
-      <span><span class="fs-key">ESC</span> Slipp musen / lukk</span>
+      <span><span class="fs-key">Piltaster</span> Beveg deg</span>
+      <span><span class="fs-key">W</span> Se opp</span>
+      <span><span class="fs-key">S</span> Se ned</span>
+      <span><span class="fs-key">ESC</span> Lukk terrengmodellen</span>
     </div>
     <button class="fs-close" onclick="closeFullscreen()">✕ Lukk terrengmodellen</button>
+  </div>
+  <div class="terrain-task-overlay" id="terrain-task-overlay">
+    <div class="overlay-timer" id="terrain-overlay-timer">Tid: 0:00</div>
+    <div class="overlay-btn-row">
+      <button class="btn btn-primary" onclick="finishTaskFromOverlay('finished')">✓ Ferdig</button>
+      <button class="btn btn-give-up" onclick="finishTaskFromOverlay('gaveup')">🏳 Jeg gir opp</button>
+    </div>
   </div>
   <iframe id="terrain-iframe" src="https://odinbo.folk.ntnu.no/spill-test/index.html" allowfullscreen></iframe>
 </div>
@@ -269,18 +285,18 @@
       </div>
     </div>
     <div class="controls-grid">
-      <div class="control-item"><div class="control-key">W A S D</div><div class="control-desc">Beveg deg frem, tilbake og til sidene</div></div>
-      <div class="control-item"><div class="control-key">Piltaster</div><div class="control-desc">Alternativ til WASD</div></div>
-      <div class="control-item"><div class="control-key">Mus</div><div class="control-desc">Se opp, ned og til siden</div></div>
-      <div class="control-item"><div class="control-key">ESC</div><div class="control-desc">Slipp musen / lukk modellen</div></div>
+      <div class="control-item"><div class="control-key">Piltaster</div><div class="control-desc">Beveg deg frem, tilbake og til sidene</div></div>
+      <div class="control-item"><div class="control-key">W</div><div class="control-desc">Se opp med kameraet</div></div>
+      <div class="control-item"><div class="control-key">S</div><div class="control-desc">Se ned med kameraet</div></div>
+      <div class="control-item"><div class="control-key">ESC</div><div class="control-desc">Lukk terrengmodellen</div></div>
     </div>
     <div class="info-combined">
       <p><strong>🎿 Din oppgave: bli kjent med terrengmodellen.</strong></p>
       <ul>
-        <li>Øv på å bevege deg rundt med tastene og se deg rundt med musen.</li>
+        <li>Øv på å bevege deg rundt med piltastene, og se opp og ned med W og S.</li>
         <li>Det er ingen riktig eller gal måte å gjøre dette på, bruk gjerne 1 til 2 minutter.</li>
       </ul>
-      <p style="margin-top:12px;">Trykk ESC for å slippe musen, og lukk med knappen i toppen når du er klar.</p>
+      <p style="margin-top:12px;">Trykk ESC eller lukk med knappen i toppen når du er klar.</p>
     </div>
     <button class="terrain-open-btn" onclick="openFullscreen()">
       🏔️ Åpne terrengmodellen i fullskjerm, trykk her
@@ -301,17 +317,20 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Kart, målpunkt: toppen</div>
+      <div class="card-title">Kart, målpunkt: toppen (Fannaråknosi)</div>
       <div class="map-ref-wrap">
-        <img src="/skitest/app.cgi/kart.png" alt="Kart med markert topp">
-        <!-- TODO: juster posisjon (left/top i prosent) til faktisk koordinat for toppen -->
-        <div class="map-marker" style="left:42%; top:32%;"></div>
-        <div class="map-marker-label" style="left:42%; top:32%;">Topp</div>
+        <img src="/skitest/app.cgi/kart.png" alt="Kart med markert start og topp">
+        <div class="map-marker-start" style="left:57%; top:4%;"></div>
+        <div class="map-marker-start-label" style="left:57%; top:4%;">Start</div>
+        <!-- Fannaraknosi -->
+        <div class="map-marker" style="left:82%; top:54%;"></div>
+        <div class="map-marker-label" style="left:82%; top:54%;">Topp</div>
       </div>
     </div>
     <div class="info-combined">
-      <p><strong>🎿 Din oppgave: naviger til toppen markert på kartet over.</strong></p>
+      <p><strong>🎿 Din oppgave: naviger fra start til toppen (Fannaråknosi) markert på kartet over.</strong></p>
       <ul>
+        <li>Tidtaking, "Ferdig" og "Jeg gir opp" vises inne i terrengmodellen når du åpner den.</li>
         <li>Trykk "Ferdig" når du tror du har nådd riktig sted.</li>
         <li>Trykk "Jeg gir opp" hvis du ikke finner frem.</li>
       </ul>
@@ -319,11 +338,6 @@
     <button class="terrain-open-btn" onclick="openFullscreen()">
       🏔️ Åpne terrengmodellen i fullskjerm, trykk her
     </button>
-    <div class="timer-display" id="timer-topp">Tid: 0:00</div>
-    <div class="task-btn-row">
-      <button class="btn btn-primary" onclick="finishTask('topp','finished',3)">✓ Ferdig</button>
-      <button class="btn btn-give-up" onclick="finishTask('topp','gaveup',3)">🏳 Jeg gir opp</button>
-    </div>
   </div>
 
   <!-- STEP 3: OPPGAVE 3 - FINN DALEN -->
@@ -338,15 +352,18 @@
     <div class="card">
       <div class="card-title">Kart, målpunkt: dalen</div>
       <div class="map-ref-wrap">
-        <img src="/skitest/app.cgi/kart.png" alt="Kart med markert dal">
+        <img src="/skitest/app.cgi/kart.png" alt="Kart med markert start og dal">
+        <div class="map-marker-start" style="left:57%; top:4%;"></div>
+        <div class="map-marker-start-label" style="left:57%; top:4%;">Start</div>
         <!-- TODO: juster posisjon (left/top i prosent) til faktisk koordinat for dalen -->
         <div class="map-marker" style="left:58%; top:61%;"></div>
         <div class="map-marker-label" style="left:58%; top:61%;">Dal</div>
       </div>
     </div>
     <div class="info-combined">
-      <p><strong>🎿 Din oppgave: naviger til dalen markert på kartet over.</strong></p>
+      <p><strong>🎿 Din oppgave: naviger fra start til dalen markert på kartet over.</strong></p>
       <ul>
+        <li>Tidtaking, "Ferdig" og "Jeg gir opp" vises inne i terrengmodellen når du åpner den.</li>
         <li>Trykk "Ferdig" når du tror du har nådd riktig sted.</li>
         <li>Trykk "Jeg gir opp" hvis du ikke finner frem.</li>
       </ul>
@@ -354,11 +371,6 @@
     <button class="terrain-open-btn" onclick="openFullscreen()">
       🏔️ Åpne terrengmodellen i fullskjerm, trykk her
     </button>
-    <div class="timer-display" id="timer-dal">Tid: 0:00</div>
-    <div class="task-btn-row">
-      <button class="btn btn-primary" onclick="finishTask('dal','finished',4)">✓ Ferdig</button>
-      <button class="btn btn-give-up" onclick="finishTask('dal','gaveup',4)">🏳 Jeg gir opp</button>
-    </div>
   </div>
 
   <!-- STEP 4: SURVEY -->
@@ -547,6 +559,7 @@ let taskData = {
 };
 let taskStartTimes = {};
 let timerIntervals = {};
+let currentTask = null; // 'tutorial' | 'topp' | 'dal' | null
 
 function submitConsent() {
   if (!document.getElementById('consent-check').checked) {
@@ -581,19 +594,21 @@ function goStep(n) {
   });
   window.scrollTo({top:0, behavior:'smooth'});
 
-  // Start tidtaking automatisk for oppgave 2 (topp) og oppgave 3 (dal)
-  if (n === 2) startTaskTimer('topp');
-  if (n === 3) startTaskTimer('dal');
+  // currentTask styrer hva som vises i overlegget inne i terrengmodellen
+  if (n === 1) { currentTask = 'tutorial'; }
+  else if (n === 2) { currentTask = 'topp'; startTaskTimer('topp'); }
+  else if (n === 3) { currentTask = 'dal'; startTaskTimer('dal'); }
+  else { currentTask = null; }
 }
 
 function startTaskTimer(taskKey) {
   taskStartTimes[taskKey] = Date.now();
   if (timerIntervals[taskKey]) clearInterval(timerIntervals[taskKey]);
-  const display = document.getElementById('timer-' + taskKey);
+  const display = document.getElementById('terrain-overlay-timer');
   timerIntervals[taskKey] = setInterval(() => {
     const elapsed = Math.floor((Date.now() - taskStartTimes[taskKey]) / 1000);
     const m = Math.floor(elapsed / 60), s = elapsed % 60;
-    if (display) display.textContent = 'Tid: ' + m + ':' + String(s).padStart(2,'0');
+    if (display && currentTask === taskKey) display.textContent = 'Tid: ' + m + ':' + String(s).padStart(2,'0');
   }, 1000);
 }
 
@@ -606,7 +621,15 @@ function finishTask(taskKey, status, nextStep) {
     status: status, // "finished" eller "gaveup"
     distance_m: taskData[taskKey].distance_m // beholder ev. verdi fra Unity, se postMessage-lytter under
   };
+  closeFullscreen();
   goStep(nextStep);
+}
+
+// Kalles fra "Ferdig"/"Jeg gir opp"-knappene inne i selve terrengmodellen (overlegget).
+function finishTaskFromOverlay(status) {
+  if (currentTask !== 'topp' && currentTask !== 'dal') return;
+  const nextStep = currentTask === 'topp' ? 3 : 4;
+  finishTask(currentTask, status, nextStep);
 }
 
 // Minimal lytter for fremtidig kobling til Unity terrengmodell.
@@ -620,6 +643,12 @@ window.addEventListener('message', (e) => {
 
 function openFullscreen() {
   document.getElementById('terrain-fs').classList.add('active');
+  const overlay = document.getElementById('terrain-task-overlay');
+  if (currentTask === 'topp' || currentTask === 'dal') {
+    overlay.classList.add('visible');
+  } else {
+    overlay.classList.remove('visible');
+  }
   setTimeout(() => {
     const iframe = document.querySelector('#terrain-fs iframe');
     if (iframe) iframe.focus();
