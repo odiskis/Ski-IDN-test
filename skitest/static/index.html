@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Topptur Brukertest · NTNU</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root {
     --navy: #1A3C5E;
@@ -147,7 +148,7 @@
       <span><span class="fs-key">Piltaster</span> Beveg deg</span>
       <span><span class="fs-key">W</span> Se opp</span>
       <span><span class="fs-key">S</span> Se ned</span>
-      <span><span class="fs-key">ESC</span> Lukk terrengmodellen</span>
+      <span><span class="fs-key">SPACE</span> Stopp</span>
     </div>
     <button class="fs-close" onclick="closeFullscreen()">✕ Lukk terrengmodellen</button>
   </div>
@@ -278,12 +279,12 @@
     </div>
   </div>
 
-  <!-- STEP 1: OPPGAVE 1 - BLI KJENT MED TERRENGMODELLEN (TUTORIAL) -->
+  <!-- STEP 1: INTRODUKSJON - BLI KJENT MED TERRENGMODELLEN (TUTORIAL) -->
   <div class="step" id="step1">
     <div class="step-header">
       <div class="step-badge" style="background:var(--blue)">1</div>
       <div>
-        <div class="step-title">Oppgave 1: Bli kjent med terrengmodellen</div>
+        <div class="step-title">Introduksjon: Bli kjent med terrengmodellen</div>
         <div class="step-desc">Utforsk fritt og lær deg kontrollene, ingen tidtaking i denne oppgaven</div>
       </div>
     </div>
@@ -291,12 +292,12 @@
       <div class="control-item"><div class="control-key">Piltaster</div><div class="control-desc">Beveg deg frem, tilbake og til sidene</div></div>
       <div class="control-item"><div class="control-key">W</div><div class="control-desc">Se opp med kameraet</div></div>
       <div class="control-item"><div class="control-key">S</div><div class="control-desc">Se ned med kameraet</div></div>
-      <div class="control-item"><div class="control-key">ESC</div><div class="control-desc">Lukk terrengmodellen</div></div>
+      <div class="control-item"><div class="control-key">SPACE</div><div class="control-desc">Stopp all fart</div></div>
     </div>
     <div class="info-combined">
       <p><strong>🎿 Din oppgave: bli kjent med terrengmodellen.</strong></p>
       <ul>
-        <li>Øv på å bevege deg rundt med piltastene, og se opp og ned med W og S.</li>
+        <li>Beveg deg med piltastene, og se opp og ned med W og S.</li>
         <li>Det er ingen riktig eller gal måte å gjøre dette på, bruk gjerne 1 til 2 minutter.</li>
       </ul>
       <p style="margin-top:12px;">Trykk ESC eller lukk med knappen i toppen når du er klar.</p>
@@ -310,31 +311,24 @@
     </div>
   </div>
 
-  <!-- STEP 2: OPPGAVE 2 - FINN TOPPEN -->
+  <!-- STEP 2: OPPGAVE 1 - FINN punkt 1 -->
   <div class="step" id="step2">
     <div class="step-header">
       <div class="step-badge" style="background:var(--accent)">2</div>
       <div>
-        <div class="step-title">Oppgave 2: Finn toppen</div>
+        <div class="step-title">Oppgave 1: Finn punkt 1</div>
         <div class="step-desc">Toppen er markert på kartet under. Finn frem til samme sted i terrengmodellen.</div>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Kart, målpunkt: toppen (Fannaråknosi)</div>
-      <div class="map-ref-wrap">
-        <img src="/skitest/app.cgi/kart.png" alt="Kart med markert start og topp">
-        <div class="map-marker-start" style="left:57%; top:4%;"></div>
-        <div class="map-marker-start-label" style="left:57%; top:4%;">Start</div>
-        <!-- Fannaraknosi -->
-        <div class="map-marker" style="left:82%; top:54%;"></div>
-        <div class="map-marker-label" style="left:82%; top:54%;">Topp</div>
-      </div>
+      <div class="card-title">Kart, målpunkt: punkt 1</div>
+      <div id="map-topp" style="width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
     </div>
     <div class="info-combined">
-      <p><strong>🎿 Din oppgave: naviger fra start til toppen (Fannaråknosi) markert på kartet over.</strong></p>
+      <p><strong>🎿 Din oppgave: naviger fra start til punkt 1 markert på kartet over.</strong></p>
       <ul>
         <li>Tidtaking, "Ferdig" og "Jeg gir opp" vises inne i terrengmodellen når du åpner den.</li>
-        <li>Trykk "Ferdig" når du tror du har nådd riktig sted.</li>
+        <li>Trykk "Ferdig" når du tror du befinner deg på punkt 1.</li>
         <li>Trykk "Jeg gir opp" hvis du ikke finner frem.</li>
       </ul>
     </div>
@@ -343,31 +337,24 @@
     </button>
   </div>
 
-  <!-- STEP 3: OPPGAVE 3 - FINN DALEN -->
+  <!-- STEP 3: OPPGAVE 2 - FINN punkt 2 -->
   <div class="step" id="step3">
     <div class="step-header">
       <div class="step-badge" style="background:var(--green)">3</div>
       <div>
-        <div class="step-title">Oppgave 3: Finn dalen</div>
+        <div class="step-title">Oppgave 1: Finn punkt 2</div>
         <div class="step-desc">Dalen er markert på kartet under. Finn frem til samme sted i terrengmodellen.</div>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Kart, målpunkt: dalen</div>
-      <div class="map-ref-wrap">
-        <img src="/skitest/app.cgi/kart.png" alt="Kart med markert start og dal">
-        <div class="map-marker-start" style="left:57%; top:4%;"></div>
-        <div class="map-marker-start-label" style="left:57%; top:4%;">Start</div>
-        <!-- TODO: juster posisjon (left/top i prosent) til faktisk koordinat for dalen -->
-        <div class="map-marker" style="left:58%; top:61%;"></div>
-        <div class="map-marker-label" style="left:58%; top:61%;">Dal</div>
-      </div>
+      <div class="card-title">Kart, målpunkt: punkt 2</div>
+      <div id="map-dal" style="width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
     </div>
     <div class="info-combined">
       <p><strong>🎿 Din oppgave: naviger fra start til dalen markert på kartet over.</strong></p>
       <ul>
         <li>Tidtaking, "Ferdig" og "Jeg gir opp" vises inne i terrengmodellen når du åpner den.</li>
-        <li>Trykk "Ferdig" når du tror du har nådd riktig sted.</li>
+        <li>Trykk "Ferdig" når du tror du befinner deg på punkt 2.</li>
         <li>Trykk "Jeg gir opp" hvis du ikke finner frem.</li>
       </ul>
     </div>
@@ -553,6 +540,10 @@
 
 <script>
 let pid = null;
+const MAPS_IMG_BASE = '/skitest/app.cgi/maps'; 
+const MAPS_META_URL = '/skitest/app.cgi/maps/map_metadata.json';
+let toppMapInitialized = false;
+let dalMapInitialized = false;
 
 // taskData holder tid, status og avstand (placeholder) per oppgave.
 // distance_m er null helt til terrengmodellen (Unity) sender ekte data.
@@ -597,10 +588,28 @@ function goStep(n) {
   });
   window.scrollTo({top:0, behavior:'smooth'});
 
-  // currentTask styrer hva som vises i overlegget inne i terrengmodellen
+// currentTask styrer hva som vises i overlegget inne i terrengmodellen
   if (n === 1) { currentTask = 'tutorial'; }
-  else if (n === 2) { currentTask = 'topp'; startTaskTimer('topp'); }
-  else if (n === 3) { currentTask = 'dal'; startTaskTimer('dal'); }
+  else if (n === 2) {
+    currentTask = 'topp'; startTaskTimer('topp');
+    if (!toppMapInitialized) {
+      toppMapInitialized = true;
+      initTopoMap('map-topp', MAPS_META_URL, MAPS_IMG_BASE, [
+        { label: 'Start', easting: 124367.0, northing: 6838734.0, color: '#2D7D46' },
+        { label: 'Punkt-1', easting: 123209.04, northing: 6841950.12, color: '#C0392B' },
+      ]);
+    }
+  }
+  else if (n === 3) {
+    currentTask = 'dal'; startTaskTimer('dal');
+    if (!dalMapInitialized) {
+      dalMapInitialized = true;
+      initTopoMap('map-dal', MAPS_META_URL, MAPS_IMG_BASE, [
+        { label: 'Start', easting: 124367.0, northing: 6838734.0, color: '#2D7D46' },
+        { label: 'Punkt-2', easting: 123657.62, northing: 6840969.33, color: '#C0392B' }
+      ]);
+    }
+  }
   else { currentTask = null; }
 }
 
@@ -692,5 +701,7 @@ async function submitAll() {
   }
 }
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/skitest/app.cgi/topomap.js"></script>
 </body>
 </html>
