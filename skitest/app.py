@@ -35,6 +35,14 @@ def admin():
 def kart():
     return send_from_directory(".", "kart.png")
 
+@app.route("/maps/<path:filename>")
+def maps_folder(filename):
+    return send_from_directory("static/maps", filename)
+
+@app.route("/topomap.js")
+def topomap_js():
+    return send_from_directory("static/js", "topomap.js")
+
 @app.route("/api/start", methods=["POST"])
 def start_session():
     participant_id = str(uuid.uuid4())[:8]
