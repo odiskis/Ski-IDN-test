@@ -32,13 +32,14 @@ from scipy import stats as scipy_stats
 # ---------- Utseende ----------
 COLOR_TOPP = "#C0392B"
 COLOR_DAL = "#2563A8"
-COLOR_GREEN = "#2D7D46"
-COLOR_ORANGE = "#D97706"
+COLOR_TOPP_LIGHT = "#E57368"
+COLOR_DAL_LIGHT = "#6FA8D6"
 COLOR_NAVY = "#1A3C5E"
 COLOR_MUTED = "#64748B"
 
 plt.rcParams.update({
-    "font.family": "sans-serif",
+    "font.family": "serif",
+    "font.serif": ["Times New Roman", "Liberation Serif", "DejaVu Serif"],
     "font.size": 11,
     "axes.edgecolor": "#CBD5E1",
     "axes.labelcolor": "#1E293B",
@@ -47,8 +48,9 @@ plt.rcParams.update({
     "ytick.color": "#1E293B",
     "axes.spines.top": False,
     "axes.spines.right": False,
-    "figure.facecolor": "white",
-    "savefig.facecolor": "white",
+    "figure.facecolor": "none",
+    "savefig.facecolor": "none",
+    "savefig.transparent": True,
     "savefig.dpi": 200,
 })
 
@@ -154,7 +156,7 @@ def no_data_note(ax, text="Ingen data tilgjengelig ennaa"):
 def savefig(fig, outdir, name):
     path = os.path.join(outdir, name)
     fig.tight_layout()
-    fig.savefig(path)
+    fig.savefig(path, transparent=True)
     plt.close(fig)
     print(f"  Lagret: {path}")
 
@@ -171,8 +173,8 @@ def chart_recognition_rate(data, outdir):
     topp_vals = [recognition_rate(data, "topp", t[1]) for t in THRESHOLDS]
     dal_vals = [recognition_rate(data, "dal", t[1]) for t in THRESHOLDS]
     x = np.arange(len(labels)); w = 0.35
-    ax.bar(x - w/2, topp_vals, w, label="Topp", color=COLOR_TOPP)
-    ax.bar(x + w/2, dal_vals, w, label="Dal", color=COLOR_DAL)
+    ax.bar(x - w/2, topp_vals, w, label="Topp", color=COLOR_TOPP, alpha=0.88, edgecolor="none")
+    ax.bar(x + w/2, dal_vals, w, label="Dal", color=COLOR_DAL, alpha=0.88, edgecolor="none")
     ax.set_xticks(x); ax.set_xticklabels(labels)
     ax.set_ylabel("% av deltakere"); ax.set_ylim(0, 100)
     ax.set_title("Gjenkjenningsrate per presisjonsterskel")
@@ -190,7 +192,7 @@ def chart_distance_histogram(data, outdir):
         savefig(fig, outdir, "02_avstandsfordeling.png")
         return
     bins = [0, 25, 50, 100, 150, 250, 500, max(500, max(topp_vals + dal_vals, default=500) + 1)]
-    ax.hist([topp_vals, dal_vals], bins=bins, label=["Topp", "Dal"], color=[COLOR_TOPP, COLOR_DAL])
+    ax.hist([topp_vals, dal_vals], bins=bins, label=["Topp", "Dal"], color=[COLOR_TOPP, COLOR_DAL], alpha=0.88)
     ax.set_xlabel("Avstand til mal (meter)"); ax.set_ylabel("Antall deltakere")
     ax.set_title("Fordeling av sluttavstand")
     ax.legend()
@@ -204,8 +206,8 @@ def chart_completion(data, outdir):
     finished = [completion_rate(data, t) for t in tasks]
     gaveup = [100 - f for f in finished]
     x = np.arange(len(tasks))
-    ax.bar(x, finished, label="Fullfort", color=COLOR_GREEN)
-    ax.bar(x, gaveup, bottom=finished, label="Gitt opp", color=COLOR_ORANGE)
+    ax.bar(x, finished, label="Fullfort", color=COLOR_DAL, alpha=0.88, edgecolor="none")
+    ax.bar(x, gaveup, bottom=finished, label="Gitt opp", color=COLOR_TOPP, alpha=0.88, edgecolor="none")
     ax.set_xticks(x); ax.set_xticklabels(["Topp", "Dal"])
     ax.set_ylabel("%"); ax.set_ylim(0, 100)
     ax.set_title("Fullfort vs. gitt opp")
@@ -237,7 +239,7 @@ def chart_topp_vs_dal(data, outdir):
                                 np.mean(distance_values(data, "dal")) if distance_values(data, "dal") else 0]),
     ]
     for ax, (title, vals) in zip(axes, metrics):
-        ax.bar(["Topp", "Dal"], vals, color=[COLOR_TOPP, COLOR_DAL])
+        ax.bar(["Topp", "Dal"], vals, color=[COLOR_TOPP, COLOR_DAL], alpha=0.88, edgecolor="none")
         ax.set_title(title)
     fig.suptitle("Topp vs. Dal, direkte sammenligning")
     savefig(fig, outdir, "05_topp_vs_dal.png")
@@ -253,8 +255,8 @@ def chart_group_comparison(data, outdir, field, order, label_map, filename, titl
     topp_vals = [completion_rate(v, "topp") for v in groups.values()]
     dal_vals = [completion_rate(v, "dal") for v in groups.values()]
     x = np.arange(len(labels)); w = 0.35
-    ax.bar(x - w/2, topp_vals, w, label="Topp", color=COLOR_TOPP)
-    ax.bar(x + w/2, dal_vals, w, label="Dal", color=COLOR_DAL)
+    ax.bar(x - w/2, topp_vals, w, label="Topp", color=COLOR_TOPP, alpha=0.88, edgecolor="none")
+    ax.bar(x + w/2, dal_vals, w, label="Dal", color=COLOR_DAL, alpha=0.88, edgecolor="none")
     ax.set_xticks(x); ax.set_xticklabels(labels)
     ax.set_ylabel("Fullforingsgrad (%)"); ax.set_ylim(0, 100)
     ax.set_title(title)
@@ -291,7 +293,7 @@ def chart_scatter(data, outdir, x_extractor, xlabel, filename, title):
     pearson_r, pearson_p = scipy_stats.pearsonr(all_x, all_y)
     spearman_r, spearman_p = scipy_stats.spearmanr(all_x, all_y)
     ax.set_xlabel(xlabel); ax.set_ylabel("Sluttavstand (m)")
-    ax.set_title(f"{title}\nPearson r={pearson_r:.2f} (p={pearson_p:.3f}), Spearman rho={spearman_r:.2f} (p={spearman_p:.3f})",
+    ax.set_title(f"{title}\nPearson r={pearson_r:.2f} (p={pearson_p:.2f}), Spearman rho={spearman_r:.2f} (p={spearman_p:.2f})",
                  fontsize=10)
     ax.legend()
     savefig(fig, outdir, filename)
@@ -311,7 +313,7 @@ def chart_survey_likert(data, outdir):
     if not labels:
         no_data_note(ax); savefig(fig, outdir, "11_survey_likert.png"); return
     y = np.arange(len(labels))
-    ax.barh(y, means, xerr=errs, color=COLOR_NAVY, capsize=4)
+    ax.barh(y, means, xerr=errs, color=COLOR_DAL, alpha=0.88, edgecolor="none", capsize=4)
     ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=9)
     ax.set_xlim(0, 5.5); ax.set_xlabel("Gjennomsnitt (Likert 1-5, feilfelt = standardavvik)")
     ax.invert_yaxis()
@@ -389,7 +391,7 @@ def main():
         pearson_r, pearson_p = scipy_stats.pearsonr(all_x, all_y)
         spearman_r, spearman_p = scipy_stats.spearmanr(all_x, all_y)
         ax.set_xlabel("Tidsbruk (sekunder)"); ax.set_ylabel("Sluttavstand (m)")
-        ax.set_title(f"Tidsbruk vs. sluttavstand\nPearson r={pearson_r:.2f} (p={pearson_p:.3f}), Spearman rho={spearman_r:.2f} (p={spearman_p:.3f})",
+        ax.set_title(f"Tidsbruk vs. sluttavstand\nPearson r={pearson_r:.2f} (p={pearson_p:.2f}), Spearman rho={spearman_r:.2f} (p={spearman_p:.2f})",
                      fontsize=10)
         ax.legend()
     savefig(fig, args.outdir, "10_tid_vs_avstand.png")
