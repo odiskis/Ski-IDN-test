@@ -100,6 +100,11 @@
     </div>
   </div>
 
+  <div class="section">
+    <div class="section-title">Alle svar</div>
+    <div id="all-responses-table"></div>
+  </div>
+
   <div class="stats-grid" id="stats-grid"></div>
 
   <div class="section">
@@ -189,11 +194,6 @@
     <div class="section-title">Åpne svar</div>
     <div id="open-answers"></div>
   </div>
-
-  <div class="section">
-    <div class="section-title">Alle svar</div>
-    <div id="all-responses-table"></div>
-  </div>
 </div>
 
 <div id="login-wrap">
@@ -210,7 +210,16 @@
 let pw = '', allData = [];
 const BASE = '/skitest/app.cgi';
 const charts = {};
-const COLORS = { topp:'#C0392B', dal:'#2563A8', navy:'#1A3C5E', green:'#2D7D46', orange:'#D97706', muted:'#64748B', accent:'#3B82C4' };
+const COLORS = { topp:'#C0392B', dal:'#2563A8', navy:'#1A3C5E', muted:'#64748B', accent:'#3B82C4' };
+function rgba(hex, a) {
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.font.family = "'Times New Roman', 'Liberation Serif', serif";
+  Chart.defaults.backgroundColor = 'transparent';
+}
 const THRESHOLDS = [ {label:'Høy (≤25m)', value:25}, {label:'Moderat (≤100m)', value:100}, {label:'Lav (≤250m)', value:250} ];
 
 // ---------- Statistikk-hjelpefunksjoner ----------
@@ -264,7 +273,7 @@ function groupByField(data, field) {
 }
 function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 function baseChartOptions(extra) {
-  return Object.assign({ responsive:true, plugins:{ legend:{ labels:{ font:{ family:"'Plus Jakarta Sans',sans-serif", size:11 } } } } }, extra||{});
+  return Object.assign({ responsive:true, plugins:{ legend:{ labels:{ font:{ family:"'Times New Roman', 'Liberation Serif', serif", size:11 } } } } }, extra||{});
 }
 
 const SURVEY_LABELS = {
@@ -359,8 +368,8 @@ function buildCompletionChart(data) {
   charts['chart-completion'] = new Chart(document.getElementById('chart-completion'), {
     type:'bar',
     data:{ labels:['Topp','Dal'], datasets:[
-      { label:'Fullført', data: tasks.map(t=>pct(t,'finished')), backgroundColor: COLORS.green, borderRadius:6 },
-      { label:'Gitt opp', data: tasks.map(t=>pct(t,'gaveup')), backgroundColor: COLORS.orange, borderRadius:6 }
+      { label:'Fullført', data: tasks.map(t=>pct(t,'finished')), backgroundColor: rgba(COLORS.dal,0.85), borderRadius:6 },
+      { label:'Gitt opp', data: tasks.map(t=>pct(t,'gaveup')), backgroundColor: rgba(COLORS.topp,0.85), borderRadius:6 }
     ]},
     options: baseChartOptions({ scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, max:100, title:{ display:true, text:'%' } } } })
   });
@@ -394,8 +403,8 @@ function buildToppVsDalChart(data) {
   charts['chart-topp-vs-dal'] = new Chart(document.getElementById('chart-topp-vs-dal'), {
     type:'bar',
     data:{ labels, datasets:[
-      { label:'Topp', data:[mean(toppT)?.toFixed(1)||0, completionRate(data,'topp'), mean(toppD)?.toFixed(1)||0], backgroundColor: COLORS.topp, borderRadius:6 },
-      { label:'Dal', data:[mean(dalT)?.toFixed(1)||0, completionRate(data,'dal'), mean(dalD)?.toFixed(1)||0], backgroundColor: COLORS.dal, borderRadius:6 }
+      { label:'Topp', data:[mean(toppT)?.toFixed(2)||0, completionRate(data,'topp'), mean(toppD)?.toFixed(2)||0], backgroundColor: COLORS.topp, borderRadius:6 },
+      { label:'Dal', data:[mean(dalT)?.toFixed(2)||0, completionRate(data,'dal'), mean(dalD)?.toFixed(2)||0], backgroundColor: COLORS.dal, borderRadius:6 }
     ]},
     options: baseChartOptions({ scales:{ y:{ beginAtZero:true } } })
   });
@@ -453,8 +462,8 @@ function renderScatterChart(id, points, xLabel, corrNoteId) {
   charts[id] = new Chart(document.getElementById(id), {
     type:'scatter',
     data:{ datasets:[
-      { label:'Topp', data: toppPts, backgroundColor: COLORS.topp },
-      { label:'Dal', data: dalPts, backgroundColor: COLORS.dal }
+      { label:'Topp', data: toppPts, backgroundColor: rgba(COLORS.topp,0.85) },
+      { label:'Dal', data: dalPts, backgroundColor: rgba(COLORS.dal,0.85) }
     ]},
     options: baseChartOptions({ scales:{ x:{ title:{ display:true, text:xLabel } }, y:{ title:{ display:true, text:'Sluttavstand (m)' } } } })
   });
@@ -582,7 +591,7 @@ function renderLikert(data) {
     if (key.startsWith('open')) continue;
     const vals = data.map(d => parseInt(d.survey?.[key])).filter(v => !isNaN(v));
     const counts = [1,2,3,4,5].map(v => vals.filter(x=>x===v).length);
-    const mean = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '-';
+    const mean = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : '-';
     html += `<div class="likert-row">
       <div class="likert-label">${label}</div>
       <div class="likert-bars">
