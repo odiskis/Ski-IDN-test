@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin · Brukertest Analyse</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 <style>
   :root {
     --navy:#1A3C5E; --blue:#2563A8; --accent:#3B82C4;
@@ -29,7 +30,7 @@
   .btn-outline:hover { background:var(--card); border-color:var(--accent); }
   .btn-danger { background:#fee2e2; color:var(--red); border:1px solid #fca5a5; }
   .btn-danger:hover { background:#fca5a5; }
-  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:28px; }
   .stat-card { background:white; border-radius:14px; padding:24px; border:1px solid var(--border); text-align:center; }
   .stat-num { font-weight:700; font-size:2.4rem; color:var(--accent); }
   .stat-label { font-size:0.8rem; color:var(--muted); margin-top:4px; }
@@ -65,6 +66,21 @@
   .resp-table th { background:var(--card); padding:10px 12px; text-align:left; font-weight:600; border-bottom:2px solid var(--border); }
   .resp-table td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
   .resp-table tr:hover { background:var(--card); }
+
+  /* VISUALISERINGER */
+  .charts-tier-title { font-weight:700; font-size:0.95rem; color:var(--navy); margin:28px 0 14px; padding-top:18px; border-top:1px solid var(--border); }
+  .charts-tier-title:first-child { margin-top:0; padding-top:0; border-top:none; }
+  .charts-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+  .charts-grid.full { grid-template-columns:1fr; }
+  .chart-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; }
+  .chart-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .chart-card-title { font-size:0.85rem; font-weight:700; color:var(--text); }
+  .chart-dl-btn { background:white; border:1px solid var(--border); border-radius:8px; padding:4px 10px; font-size:0.72rem; cursor:pointer; color:var(--muted); font-family:'Plus Jakarta Sans',sans-serif; }
+  .chart-dl-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .chart-card canvas { max-height:280px; }
+  .chart-note { font-size:0.78rem; color:var(--muted); margin-top:10px; line-height:1.5; }
+  .chart-warning { background:#FEF3E2; border:1px solid var(--orange); border-radius:10px; padding:12px 16px; font-size:0.85rem; color:var(--text); margin-bottom:20px; }
+  @media(max-width:800px) { .charts-grid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -87,9 +103,79 @@
   <div class="stats-grid" id="stats-grid"></div>
 
   <div class="section">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:10px;">
+      <div class="section-title" style="margin-bottom:0;">Visualiseringer</div>
+      <button class="btn btn-outline" onclick="downloadAllCharts()">📊 Last ned alle grafer (PNG)</button>
+    </div>
+    <div id="chart-data-warning"></div>
+
+    <div class="charts-tier-title">Gjenkjenningsrate (kjernen i RQ)</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Gjenkjenningsrate per terskel</span><button class="chart-dl-btn" onclick="downloadChart('chart-recognition-rate')">Last ned</button></div>
+        <canvas id="chart-recognition-rate"></canvas>
+        <p class="chart-note">Andel deltakere som fullførte innenfor 25m (høy), 100m (moderat) og 250m (lav) presisjon, per oppgave.</p>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Fordeling av sluttavstand</span><button class="chart-dl-btn" onclick="downloadChart('chart-distance-hist')">Last ned</button></div>
+        <canvas id="chart-distance-hist"></canvas>
+        <p class="chart-note">Viser om avstandene klumper seg rundt lave verdier (presis gjenkjenning) eller sprer seg jevnt (tilfeldig gjetting).</p>
+      </div>
+    </div>
+
+    <div class="charts-tier-title">Oppgaveprestasjon</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Fullført vs. gitt opp</span><button class="chart-dl-btn" onclick="downloadChart('chart-completion')">Last ned</button></div>
+        <canvas id="chart-completion"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Tidsbruk fordeling</span><button class="chart-dl-btn" onclick="downloadChart('chart-time-dist')">Last ned</button></div>
+        <canvas id="chart-time-dist"></canvas>
+      </div>
+      <div class="chart-card" style="grid-column:1 / -1;">
+        <div class="chart-card-header"><span class="chart-card-title">Topp vs. Dal, direkte sammenligning</span><button class="chart-dl-btn" onclick="downloadChart('chart-topp-vs-dal')">Last ned</button></div>
+        <canvas id="chart-topp-vs-dal"></canvas>
+        <p class="chart-note">Snitt-tid (sekunder), fullføringsgrad (%) og snitt sluttavstand (meter) satt direkte opp mot hverandre.</p>
+      </div>
+    </div>
+
+    <div class="charts-tier-title">Gruppesammenligninger</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Skierfaring vs. prestasjon</span><button class="chart-dl-btn" onclick="downloadChart('chart-ski-exp')">Last ned</button></div>
+        <canvas id="chart-ski-exp"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Karterfaring vs. prestasjon</span><button class="chart-dl-btn" onclick="downloadChart('chart-map-exp')">Last ned</button></div>
+        <canvas id="chart-map-exp"></canvas>
+      </div>
+    </div>
+
+    <div class="charts-tier-title">Korrelasjoner</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Presence vs. sluttavstand</span><button class="chart-dl-btn" onclick="downloadChart('chart-presence-scatter')">Last ned</button></div>
+        <canvas id="chart-presence-scatter"></canvas>
+        <p class="chart-note" id="corr-presence-note"></p>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Believability vs. sluttavstand</span><button class="chart-dl-btn" onclick="downloadChart('chart-believe-scatter')">Last ned</button></div>
+        <canvas id="chart-believe-scatter"></canvas>
+        <p class="chart-note" id="corr-believe-note"></p>
+      </div>
+      <div class="chart-card" style="grid-column:1 / -1;">
+        <div class="chart-card-header"><span class="chart-card-title">Tidsbruk vs. sluttavstand</span><button class="chart-dl-btn" onclick="downloadChart('chart-time-scatter')">Last ned</button></div>
+        <canvas id="chart-time-scatter"></canvas>
+        <p class="chart-note" id="corr-time-note">Tester om lengre tidsbruk gir bedre presisjon, eller bare mer forvirring.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
     <div class="section-title">Oppgavedata — tid og status per deltaker</div>
     <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">
-      Avstand til mål (meter) er ikke inkludert her ennå, siden dette avhenger av koblingen til terrengmodellen (Unity) som ikke er på plass.
+      Avstand til mål (meter) inkludert der terrengmodellen (Unity) har sendt data.
     </p>
     <div id="tasks-table"></div>
   </div>
@@ -123,6 +209,63 @@
 <script>
 let pw = '', allData = [];
 const BASE = '/skitest/app.cgi';
+const charts = {};
+const COLORS = { topp:'#C0392B', dal:'#2563A8', navy:'#1A3C5E', green:'#2D7D46', orange:'#D97706', muted:'#64748B', accent:'#3B82C4' };
+const THRESHOLDS = [ {label:'Høy (≤25m)', value:25}, {label:'Moderat (≤100m)', value:100}, {label:'Lav (≤250m)', value:250} ];
+
+// ---------- Statistikk-hjelpefunksjoner ----------
+function mean(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
+function median(arr) {
+  if (!arr.length) return null;
+  const s = [...arr].sort((a,b)=>a-b);
+  const mid = Math.floor(s.length/2);
+  return s.length % 2 ? s[mid] : (s[mid-1]+s[mid])/2;
+}
+function stdev(arr) {
+  if (arr.length < 2) return 0;
+  const m = mean(arr);
+  return Math.sqrt(arr.reduce((a,b)=>a+(b-m)**2,0)/(arr.length-1));
+}
+function pearson(xs, ys) {
+  const n = xs.length;
+  if (n < 2) return null;
+  const mx = mean(xs), my = mean(ys);
+  let num=0, dx2=0, dy2=0;
+  for (let i=0;i<n;i++) { const dx=xs[i]-mx, dy=ys[i]-my; num += dx*dy; dx2 += dx*dx; dy2 += dy*dy; }
+  if (dx2===0 || dy2===0) return null;
+  return num / Math.sqrt(dx2*dy2);
+}
+function distanceValues(data, taskKey) {
+  return data.map(d=>d.tasks?.[taskKey]).filter(t=>t && t.status==='finished' && typeof t.distance_m === 'number').map(t=>t.distance_m);
+}
+function timeValues(data, taskKey) {
+  return data.map(d=>d.tasks?.[taskKey]?.time_seconds).filter(v=>typeof v === 'number');
+}
+function recognitionRate(data, taskKey, threshold) {
+  const attempted = data.filter(d => d.tasks?.[taskKey]?.status);
+  if (!attempted.length) return 0;
+  const within = attempted.filter(d => {
+    const t = d.tasks[taskKey];
+    return t.status === 'finished' && typeof t.distance_m === 'number' && t.distance_m <= threshold;
+  });
+  return Math.round(within.length / attempted.length * 100);
+}
+function hasAnyDistance(data) {
+  return data.some(d => typeof d.tasks?.topp?.distance_m === 'number' || typeof d.tasks?.dal?.distance_m === 'number');
+}
+function groupByField(data, field) {
+  const groups = {};
+  data.forEach(d => {
+    const key = d[field] || 'ukjent';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(d);
+  });
+  return groups;
+}
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+function baseChartOptions(extra) {
+  return Object.assign({ responsive:true, plugins:{ legend:{ labels:{ font:{ family:"'Plus Jakarta Sans',sans-serif", size:11 } } } } }, extra||{});
+}
 
 const SURVEY_LABELS = {
   nav1: 'Det var enkelt å bevege seg rundt ved hjelp av taster og kontroller i terrengmodellen',
@@ -153,8 +296,211 @@ async function doLogin() {
   } catch(e) { document.getElementById('login-err').textContent = 'Kunne ikke koble til.'; }
 }
 
+// ========== VISUALISERINGER ==========
+function renderCharts(data) {
+  const warnBox = document.getElementById('chart-data-warning');
+  if (!hasAnyDistance(data)) {
+    warnBox.innerHTML = `<div class="chart-warning">⚠️ Ingen avstandsdata (distance_m) er mottatt fra terrengmodellen ennå. Gjenkjenningsrate, avstandsfordeling og korrelasjonsgrafene under vil derfor være tomme eller vise 0, inntil Unity sender denne dataen.</div>`;
+  } else {
+    warnBox.innerHTML = '';
+  }
+  buildRecognitionRateChart(data);
+  buildDistanceHistChart(data);
+  buildCompletionChart(data);
+  buildTimeDistChart(data);
+  buildToppVsDalChart(data);
+  buildSkiExpChart(data);
+  buildMapExpChart(data);
+  buildPresenceScatterChart(data);
+  buildBelieveScatterChart(data);
+  buildTimeScatterChart(data);
+}
+
+function buildRecognitionRateChart(data) {
+  destroyChart('chart-recognition-rate');
+  const labels = THRESHOLDS.map(t => t.label);
+  charts['chart-recognition-rate'] = new Chart(document.getElementById('chart-recognition-rate'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label:'Topp', data: THRESHOLDS.map(t => recognitionRate(data,'topp',t.value)), backgroundColor: COLORS.topp, borderRadius:6 },
+      { label:'Dal', data: THRESHOLDS.map(t => recognitionRate(data,'dal',t.value)), backgroundColor: COLORS.dal, borderRadius:6 }
+    ]},
+    options: baseChartOptions({ scales:{ y:{ beginAtZero:true, max:100, title:{ display:true, text:'% av deltakere' } } } })
+  });
+}
+
+function buildDistanceHistChart(data) {
+  destroyChart('chart-distance-hist');
+  const bins = [0,25,50,100,150,250,500,Infinity];
+  const binLabels = ['0-25','25-50','50-100','100-150','150-250','250-500','500+'];
+  function counts(vals) {
+    return bins.slice(0,-1).map((lo,i) => vals.filter(v => v>=lo && v<bins[i+1]).length);
+  }
+  const toppVals = distanceValues(data,'topp');
+  const dalVals = distanceValues(data,'dal');
+  charts['chart-distance-hist'] = new Chart(document.getElementById('chart-distance-hist'), {
+    type:'bar',
+    data:{ labels: binLabels, datasets:[
+      { label:'Topp', data: counts(toppVals), backgroundColor: COLORS.topp, borderRadius:4 },
+      { label:'Dal', data: counts(dalVals), backgroundColor: COLORS.dal, borderRadius:4 }
+    ]},
+    options: baseChartOptions({ scales:{ x:{ title:{ display:true, text:'Avstand til mål (meter)' } }, y:{ beginAtZero:true, title:{ display:true, text:'Antall deltakere' }, ticks:{ stepSize:1 } } } })
+  });
+}
+
+function buildCompletionChart(data) {
+  destroyChart('chart-completion');
+  const tasks = ['topp','dal'];
+  function pct(taskKey, status) {
+    const withStatus = data.filter(d => d.tasks?.[taskKey]?.status);
+    if (!withStatus.length) return 0;
+    return Math.round(withStatus.filter(d => d.tasks[taskKey].status === status).length / withStatus.length * 100);
+  }
+  charts['chart-completion'] = new Chart(document.getElementById('chart-completion'), {
+    type:'bar',
+    data:{ labels:['Topp','Dal'], datasets:[
+      { label:'Fullført', data: tasks.map(t=>pct(t,'finished')), backgroundColor: COLORS.green, borderRadius:6 },
+      { label:'Gitt opp', data: tasks.map(t=>pct(t,'gaveup')), backgroundColor: COLORS.orange, borderRadius:6 }
+    ]},
+    options: baseChartOptions({ scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, max:100, title:{ display:true, text:'%' } } } })
+  });
+}
+
+function buildTimeDistChart(data) {
+  destroyChart('chart-time-dist');
+  const toppT = timeValues(data,'topp'), dalT = timeValues(data,'dal');
+  function range(vals) { return vals.length ? [Math.min(...vals), Math.max(...vals)] : [0,0]; }
+  charts['chart-time-dist'] = new Chart(document.getElementById('chart-time-dist'), {
+    type:'bar',
+    data:{ labels:['Topp','Dal'], datasets:[
+      { label:'Min-maks tidsspenn (s)', data:[range(toppT), range(dalT)], backgroundColor:[COLORS.topp, COLORS.dal], borderRadius:6 }
+    ]},
+    options: baseChartOptions({
+      indexAxis:'y',
+      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: (ctx) => {
+        const vals = ctx.dataIndex===0 ? toppT : dalT;
+        return `Snitt: ${mean(vals)?.toFixed(0) ?? '-'}s · Median: ${median(vals)?.toFixed(0) ?? '-'}s · Min-maks: ${ctx.raw[0]}-${ctx.raw[1]}s`;
+      } } } },
+      scales:{ x:{ title:{ display:true, text:'Sekunder' } } }
+    })
+  });
+}
+
+function buildToppVsDalChart(data) {
+  destroyChart('chart-topp-vs-dal');
+  const toppT = timeValues(data,'topp'), dalT = timeValues(data,'dal');
+  const toppD = distanceValues(data,'topp'), dalD = distanceValues(data,'dal');
+  const labels = ['Snitt tid (s)','Fullføringsgrad (%)','Snitt avstand (m)'];
+  charts['chart-topp-vs-dal'] = new Chart(document.getElementById('chart-topp-vs-dal'), {
+    type:'bar',
+    data:{ labels, datasets:[
+      { label:'Topp', data:[mean(toppT)?.toFixed(1)||0, completionRate(data,'topp'), mean(toppD)?.toFixed(1)||0], backgroundColor: COLORS.topp, borderRadius:6 },
+      { label:'Dal', data:[mean(dalT)?.toFixed(1)||0, completionRate(data,'dal'), mean(dalD)?.toFixed(1)||0], backgroundColor: COLORS.dal, borderRadius:6 }
+    ]},
+    options: baseChartOptions({ scales:{ y:{ beginAtZero:true } } })
+  });
+}
+
+function buildSkiExpChart(data) {
+  destroyChart('chart-ski-exp');
+  const order = ['ingen','nybegynner','middels','erfaren','ekspert'];
+  const groups = groupByField(data, 'ski_experience');
+  const levels = order.filter(l => groups[l]);
+  charts['chart-ski-exp'] = new Chart(document.getElementById('chart-ski-exp'), {
+    type:'bar',
+    data:{ labels: levels, datasets:[
+      { label:'Fullført Topp (%)', data: levels.map(l => completionRate(groups[l],'topp')), backgroundColor: COLORS.topp, borderRadius:6 },
+      { label:'Fullført Dal (%)', data: levels.map(l => completionRate(groups[l],'dal')), backgroundColor: COLORS.dal, borderRadius:6 }
+    ]},
+    options: baseChartOptions({ scales:{ y:{ beginAtZero:true, max:100, title:{ display:true, text:'%' } } } })
+  });
+}
+
+function buildMapExpChart(data) {
+  destroyChart('chart-map-exp');
+  const order = ['aldri','under5','5til15','over15'];
+  const labelMap = { aldri:'Aldri', under5:'<5/år', '5til15':'5-15/år', over15:'15+/år' };
+  const groups = groupByField(data, 'map_experience');
+  const levels = order.filter(l => groups[l]);
+  charts['chart-map-exp'] = new Chart(document.getElementById('chart-map-exp'), {
+    type:'bar',
+    data:{ labels: levels.map(l=>labelMap[l]||l), datasets:[
+      { label:'Fullført Topp (%)', data: levels.map(l => completionRate(groups[l],'topp')), backgroundColor: COLORS.topp, borderRadius:6 },
+      { label:'Fullført Dal (%)', data: levels.map(l => completionRate(groups[l],'dal')), backgroundColor: COLORS.dal, borderRadius:6 }
+    ]},
+    options: baseChartOptions({ scales:{ y:{ beginAtZero:true, max:100, title:{ display:true, text:'%' } } } })
+  });
+}
+
+function scatterPointsFor(data, surveyKeyOrAvgFn) {
+  const points = [];
+  ['topp','dal'].forEach(taskKey => {
+    data.forEach(d => {
+      const dist = d.tasks?.[taskKey]?.distance_m;
+      if (typeof dist !== 'number') return;
+      const x = typeof surveyKeyOrAvgFn === 'function' ? surveyKeyOrAvgFn(d) : parseInt(d.survey?.[surveyKeyOrAvgFn]);
+      if (isNaN(x)) return;
+      points.push({ x, y: dist, task: taskKey });
+    });
+  });
+  return points;
+}
+
+function renderScatterChart(id, points, xLabel, corrNoteId) {
+  destroyChart(id);
+  const toppPts = points.filter(p=>p.task==='topp').map(p=>({x:p.x,y:p.y}));
+  const dalPts = points.filter(p=>p.task==='dal').map(p=>({x:p.x,y:p.y}));
+  charts[id] = new Chart(document.getElementById(id), {
+    type:'scatter',
+    data:{ datasets:[
+      { label:'Topp', data: toppPts, backgroundColor: COLORS.topp },
+      { label:'Dal', data: dalPts, backgroundColor: COLORS.dal }
+    ]},
+    options: baseChartOptions({ scales:{ x:{ title:{ display:true, text:xLabel } }, y:{ title:{ display:true, text:'Sluttavstand (m)' } } } })
+  });
+  if (corrNoteId) {
+    const allX = points.map(p=>p.x), allY = points.map(p=>p.y);
+    const r = pearson(allX, allY);
+    document.getElementById(corrNoteId).textContent = r === null ? 'Ikke nok data til å beregne korrelasjon ennå.' : `Pearson r = ${r.toFixed(2)} (n=${allX.length})`;
+  }
+}
+
+function buildPresenceScatterChart(data) {
+  renderScatterChart('chart-presence-scatter', scatterPointsFor(data,'presence1'), 'Presence (1-5)', 'corr-presence-note');
+}
+function buildBelieveScatterChart(data) {
+  const avgBelieve = d => {
+    const vals = ['believe1','believe2','believe3'].map(k=>parseInt(d.survey?.[k])).filter(v=>!isNaN(v));
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : NaN;
+  };
+  renderScatterChart('chart-believe-scatter', scatterPointsFor(data, avgBelieve), 'Believability (snitt 1-5)', 'corr-believe-note');
+}
+function buildTimeScatterChart(data) {
+  const points = [];
+  ['topp','dal'].forEach(taskKey => {
+    data.forEach(d => {
+      const dist = d.tasks?.[taskKey]?.distance_m;
+      const time = d.tasks?.[taskKey]?.time_seconds;
+      if (typeof dist === 'number' && typeof time === 'number') points.push({ x:time, y:dist, task:taskKey });
+    });
+  });
+  renderScatterChart('chart-time-scatter', points, 'Tidsbruk (sekunder)', 'corr-time-note');
+}
+
+function downloadChart(id) {
+  if (!charts[id]) { alert('Grafen er ikke klar ennå.'); return; }
+  const a = document.createElement('a');
+  a.href = charts[id].toBase64Image('image/png', 1);
+  a.download = id + '.png';
+  a.click();
+}
+function downloadAllCharts() {
+  Object.keys(charts).forEach((id,i) => setTimeout(() => downloadChart(id), i*200));
+}
+
 function render(data) {
   renderStats(data);
+  renderCharts(data);
   renderTasksTable(data);
   renderLikert(data);
   renderOpenAnswers(data);
@@ -183,6 +529,8 @@ function renderStats(data) {
   const n = data.length;
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">Deltakere totalt</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:${COLORS.topp}">${recognitionRate(data,'topp',100)}%</div><div class="stat-label">Gjenkjenningsrate Topp (≤100m)</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:${COLORS.dal}">${recognitionRate(data,'dal',100)}%</div><div class="stat-label">Gjenkjenningsrate Dal (≤100m)</div></div>
     <div class="stat-card"><div class="stat-num">${completionRate(data,'topp')}%</div><div class="stat-label">Fullført oppgave #1 Topp</div></div>
     <div class="stat-card"><div class="stat-num">${completionRate(data,'dal')}%</div><div class="stat-label">Fullført oppgave #2 Dal</div></div>
     <div class="stat-card"><div class="stat-num">${fmtTime(avgTaskTime(data,'topp'))} / ${fmtTime(avgTaskTime(data,'dal'))}</div><div class="stat-label">Snitt tid Topp / Dal</div></div>`;
@@ -194,11 +542,15 @@ function statusBadge(status) {
   return '<span class="status-badge badge-none">-</span>';
 }
 
+function fmtDist(m) {
+  return (m === null || m === undefined || isNaN(m)) ? '-' : Math.round(m) + ' m';
+}
+
 function renderTasksTable(data) {
   let html = `<table class="resp-table"><thead><tr>
     <th>ID</th><th>Ski-erfaring</th><th>Kart-erfaring</th>
-    <th>Topp: tid</th><th>Topp: status</th>
-    <th>Dal: tid</th><th>Dal: status</th>
+    <th>Topp: tid</th><th>Topp: avstand</th><th>Topp: status</th>
+    <th>Dal: tid</th><th>Dal: avstand</th><th>Dal: status</th>
   </tr></thead><tbody>`;
   data.forEach(d => {
     const topp = d.tasks?.topp || {};
@@ -208,8 +560,10 @@ function renderTasksTable(data) {
       <td>${d.ski_experience||'-'}</td>
       <td>${d.map_experience||'-'}</td>
       <td>${fmtTime(topp.time_seconds)}</td>
+      <td>${fmtDist(topp.distance_m)}</td>
       <td>${statusBadge(topp.status)}</td>
       <td>${fmtTime(dal.time_seconds)}</td>
+      <td>${fmtDist(dal.distance_m)}</td>
       <td>${statusBadge(dal.status)}</td>
     </tr>`;
   });
