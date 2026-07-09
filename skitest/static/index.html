@@ -80,7 +80,7 @@
   .map-marker-start-label { position:absolute; background:var(--blue); color:white; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:6px; transform:translate(-50%,-140%); white-space:nowrap; }
 
   /* OVERLAY: tid + ferdig/gi opp, vist oppå terrengmodellen i fullskjerm */
-  .terrain-task-overlay { position:absolute; bottom:28px; left:50%; transform:translateX(-50%); z-index:20; background:rgba(26,60,94,0.92); border-radius:16px; padding:16px 20px; display:none; flex-direction:column; align-items:center; gap:12px; box-shadow:0 6px 24px rgba(0,0,0,0.3); min-width:320px; }
+  .terrain-task-overlay { position:absolute; bottom:28px; left:75%; transform:translateX(-50%); z-index:20; background:rgba(26,60,94,0.92); border-radius:16px; padding:16px 20px; display:none; flex-direction:column; align-items:center; gap:12px; box-shadow:0 6px 24px rgba(0,0,0,0.3); min-width:320px; }
   .terrain-task-overlay.visible { display:flex; }
   .terrain-task-overlay .overlay-timer { font-family:monospace; font-size:1.3rem; font-weight:700; color:white; }
   .terrain-task-overlay .overlay-btn-row { display:flex; gap:10px; width:100%; }
@@ -163,7 +163,7 @@
     </div>
   </div>
   <div class="terrain-fs-body">
-    <iframe id="terrain-iframe" src="https://odinbo.folk.ntnu.no/spill-test-master/" allowfullscreen></iframe>
+    <iframe id="terrain-iframe" src="https://odinbo.folk.ntnu.no/spill-test-master_v2/" allowfullscreen></iframe>
     <div class="terrain-fs-mapslot" id="terrain-fs-mapslot"></div>
   </div>
 </div>
@@ -179,6 +179,7 @@
     <div class="dot" id="dot2"></div>
     <div class="dot" id="dot3"></div>
     <div class="dot" id="dot4"></div>
+    <div class="dot" id="dot5"></div>
   </div>
 </div>
 
@@ -315,7 +316,7 @@
       </div>
     </div>
     <button class="terrain-open-btn" onclick="openFullscreen()">
-      🏔️ Åpne terrengmodellen i fullskjerm, trykk her
+      🏔️ Åpne terrengmodellen, trykk her
     </button>
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="goStep(0)">← Tilbake</button>
@@ -323,7 +324,7 @@
     </div>
   </div>
 
-  <!-- STEP 2: OPPGAVE 1 - FINN punkt 1 -->
+  <!-- STEP 2: OPPGAVE 1 - Gå til punkt 1 i terrengmodellen -->
   <div class="step" id="step2">
     <div class="step-header">
       <div class="step-badge" style="background:var(--accent)">2</div>
@@ -347,11 +348,11 @@
       </ul>
     </div>
     <button class="terrain-open-btn" onclick="openFullscreen()">
-      🏔️ Åpne terrengmodellen i fullskjerm, trykk her
+      🏔️ Åpne terrengmodellen, trykk her
     </button>
   </div>
 
-  <!-- STEP 3: OPPGAVE 2 - FINN punkt 2 -->
+  <!-- STEP 3: OPPGAVE 2 - Gå til punkt 2 i terrengmodellen -->
   <div class="step" id="step3">
     <div class="step-header">
       <div class="step-badge" style="background:var(--green)">3</div>
@@ -375,7 +376,7 @@
       </ul>
     </div>
     <button class="terrain-open-btn" onclick="openFullscreen()">
-      🏔️ Åpne terrengmodellen i fullskjerm, trykk her
+      🏔️ Åpne terrengmodellen, trykk her
     </button>
   </div>
 
@@ -596,6 +597,12 @@ async function startTest() {
   } catch(e) { pid = Math.random().toString(36).substring(2,10); }
   goStep(1);
 }
+// 
+function reloadTerrain() {
+  const iframe = document.getElementById('terrain-iframe');
+  const baseSrc = iframe.src.split('?')[0];
+  iframe.src = baseSrc + '?t=' + Date.now();
+}
 
 function goStep(n) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -617,7 +624,8 @@ function goStep(n) {
     }
   }
   else if (n === 2) {
-    currentTask = 'topp'; startTaskTimer('topp');
+    currentTask = 'topp'; reloadTerrain(); startTaskTimer('topp');
+
     if (!toppMapInitialized) {
       toppMapInitialized = true;
       toppMapInstance = initTopoMap('map-topp', MAPS_META_URL, MAPS_IMG_BASE, [
@@ -627,7 +635,7 @@ function goStep(n) {
     }
   }
   else if (n === 3) {
-    currentTask = 'dal'; startTaskTimer('dal');
+    currentTask = 'dal'; reloadTerrain(); startTaskTimer('dal');
     if (!dalMapInitialized) {
       dalMapInitialized = true;
       dalMapInstance = initTopoMap('map-dal', MAPS_META_URL, MAPS_IMG_BASE, [
