@@ -54,7 +54,10 @@
   .terrain-fs-bar .keys { display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
   .fs-key { background:rgba(255,255,255,0.15); border-radius:6px; padding:3px 10px; font-family:monospace; font-size:0.82rem; }
   .fs-close { background:var(--yellow); border:none; color:var(--navy); padding:8px 20px; border-radius:8px; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:0.9rem; }
-  .terrain-fullscreen iframe { flex:1; border:none; width:100%; }
+  .terrain-fs-body { display:flex; flex:1; flex-direction:row; overflow:hidden; padding:12px; gap:12px; box-sizing:border-box; }
+  .terrain-fullscreen iframe { flex:1; border:none; height:100%; }
+  .terrain-fs-mapslot { width:40%; flex-shrink:0; background:#fff; border-left:2px solid var(--border); overflow:hidden; }
+  .terrain-fs-mapslot > div { width:100% !important; height:100% !important; aspect-ratio:unset !important; border-radius:0 !important; border:none !important; }
 
   .terrain-open-btn { width:100%; padding:26px 20px; border-radius:16px; border:none; background:var(--navy); cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:1.15rem; font-weight:700; color:white; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 4px 16px rgba(26,60,94,0.25); margin-top:20px; }
   .terrain-open-btn:hover { background:var(--blue); transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,60,94,0.3); }
@@ -159,7 +162,10 @@
       <button class="btn btn-give-up" onclick="finishTaskFromOverlay('gaveup')">🏳 Jeg gir opp</button>
     </div>
   </div>
-  <iframe id="terrain-iframe" src="https://odinbo.folk.ntnu.no/spill-test-master/" allowfullscreen></iframe>
+  <div class="terrain-fs-body">
+    <iframe id="terrain-iframe" src="https://odinbo.folk.ntnu.no/spill-test-master/" allowfullscreen></iframe>
+    <div class="terrain-fs-mapslot" id="terrain-fs-mapslot"></div>
+  </div>
 </div>
 
 <div class="topbar">
@@ -302,6 +308,12 @@
       </ul>
       <p style="margin-top:12px;">Trykk ESC eller lukk med knappen i toppen når du er klar.</p>
     </div>
+    <div class="card">
+      <div class="card-title">Oversiktskart</div>
+      <div id="map-tutorial-slot">
+        <div id="map-tutorial" style="width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
+      </div>
+    </div>
     <button class="terrain-open-btn" onclick="openFullscreen()">
       🏔️ Åpne terrengmodellen i fullskjerm, trykk her
     </button>
@@ -322,7 +334,9 @@
     </div>
     <div class="card">
       <div class="card-title">Kart, målpunkt: punkt 1</div>
-      <div id="map-topp" style="width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
+      <div id="map-topp-slot">
+        <div id="map-topp" style="width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
+      </div>
     </div>
     <div class="info-combined">
       <p><strong>🎿 Din oppgave: naviger fra start til punkt 1 markert på kartet over.</strong></p>
@@ -342,16 +356,18 @@
     <div class="step-header">
       <div class="step-badge" style="background:var(--green)">3</div>
       <div>
-        <div class="step-title">Oppgave 1: Finn punkt 2</div>
-        <div class="step-desc">Dalen er markert på kartet under. Finn frem til samme sted i terrengmodellen.</div>
+        <div class="step-title">Oppgave 2: Finn punkt 2</div>
+        <div class="step-desc">Punkt 2 er markert på kartet under. Finn frem til samme sted i terrengmodellen.</div>
       </div>
     </div>
     <div class="card">
       <div class="card-title">Kart, målpunkt: punkt 2</div>
-      <div id="map-dal" style="width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
+      <div id="map-dal-slot">
+        <div id="map-dal" style="width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
+      </div>
     </div>
     <div class="info-combined">
-      <p><strong>🎿 Din oppgave: naviger fra start til dalen markert på kartet over.</strong></p>
+      <p><strong>🎿 Din oppgave: naviger fra start til punkt 2 markert på kartet over.</strong></p>
       <ul>
         <li>Tidtaking, "Ferdig" og "Jeg gir opp" vises inne i terrengmodellen når du åpner den.</li>
         <li>Trykk "Ferdig" når du tror du befinner deg på punkt 2.</li>
@@ -544,6 +560,10 @@ const MAPS_IMG_BASE = '/skitest/app.cgi/maps';
 const MAPS_META_URL = '/skitest/app.cgi/maps/map_metadata.json';
 let toppMapInitialized = false;
 let dalMapInitialized = false;
+let tutorialMapInitialized = false;
+let tutorialMapInstance = null;
+let toppMapInstance = null;
+let dalMapInstance = null;
 
 // taskData holder tid, status og avstand (placeholder) per oppgave.
 // distance_m er null helt til terrengmodellen (Unity) sender ekte data.
@@ -589,12 +609,18 @@ function goStep(n) {
   window.scrollTo({top:0, behavior:'smooth'});
 
 // currentTask styrer hva som vises i overlegget inne i terrengmodellen
-  if (n === 1) { currentTask = 'tutorial'; }
+  if (n === 1) {
+    currentTask = 'tutorial';
+    if (!tutorialMapInitialized) {
+      tutorialMapInitialized = true;
+      tutorialMapInstance = initTopoMap('map-tutorial', MAPS_META_URL, MAPS_IMG_BASE, []);
+    }
+  }
   else if (n === 2) {
     currentTask = 'topp'; startTaskTimer('topp');
     if (!toppMapInitialized) {
       toppMapInitialized = true;
-      initTopoMap('map-topp', MAPS_META_URL, MAPS_IMG_BASE, [
+      toppMapInstance = initTopoMap('map-topp', MAPS_META_URL, MAPS_IMG_BASE, [
         { label: 'Start', easting: 124367.0, northing: 6838734.0, color: '#2D7D46' },
         { label: 'Punkt-1', easting: 123209.04, northing: 6841950.12, color: '#C0392B' },
       ]);
@@ -604,7 +630,7 @@ function goStep(n) {
     currentTask = 'dal'; startTaskTimer('dal');
     if (!dalMapInitialized) {
       dalMapInitialized = true;
-      initTopoMap('map-dal', MAPS_META_URL, MAPS_IMG_BASE, [
+      dalMapInstance = initTopoMap('map-dal', MAPS_META_URL, MAPS_IMG_BASE, [
         { label: 'Start', easting: 124367.0, northing: 6838734.0, color: '#2D7D46' },
         { label: 'Punkt-2', easting: 123657.62, northing: 6840969.33, color: '#C0392B' }
       ]);
@@ -624,49 +650,124 @@ function startTaskTimer(taskKey) {
   }, 1000);
 }
 
-function finishTask(taskKey, status, nextStep) {
+function finishTask(taskKey, status, nextStep, positionInfo) {
   if (timerIntervals[taskKey]) clearInterval(timerIntervals[taskKey]);
   const start = taskStartTimes[taskKey] || Date.now();
   const elapsedSeconds = Math.round((Date.now() - start) / 1000);
   taskData[taskKey] = {
     time_seconds: elapsedSeconds,
-    status: status, // "finished" eller "gaveup"
-    distance_m: taskData[taskKey].distance_m // beholder ev. verdi fra Unity, se postMessage-lytter under
+    status: status,
+    unity_position: positionInfo ? positionInfo.unity : null,
+    map_position: positionInfo ? positionInfo.map : null
   };
   closeFullscreen();
   goStep(nextStep);
 }
 
-// Kalles fra "Ferdig"/"Jeg gir opp"-knappene inne i selve terrengmodellen (overlegget).
+// Kalles fra "Ferdig"/"Jeg gir opp"-knappene. Ber Unity om spillerens
+// posisjon fremfor a avslutte oppgaven med en gang -- selve avslutningen
+// skjer i message-lytteren under, nar svaret kommer tilbake.
 function finishTaskFromOverlay(status) {
   if (currentTask !== 'topp' && currentTask !== 'dal') return;
-  const nextStep = currentTask === 'topp' ? 3 : 4;
-  finishTask(currentTask, status, nextStep);
+  requestUnityPosition(currentTask, status);
 }
 
-// Minimal lytter for fremtidig kobling til Unity terrengmodell.
-// Forventet meldingsformat fra Unity (via window.parent.postMessage):
-// { type: "terrain-task-result", task: "topp" | "dal", distance_m: <tall> }
+function requestUnityPosition(task, status) {
+  const iframe = document.getElementById('terrain-iframe');
+  try {
+    iframe.contentWindow.unityInstance.SendMessage('Player', 'ReportPosition', task + '|' + status);
+  } catch (e) {
+    console.error('Kunne ikke be Unity om posisjon:', e);
+    finishTask(task, status, task === 'topp' ? 3 : 4);
+  }
+}
+
 window.addEventListener('message', (e) => {
-  if (e.data && e.data.type === 'terrain-task-result' && taskData[e.data.task]) {
-    taskData[e.data.task].distance_m = e.data.distance_m;
+  if (e.data && e.data.type === 'terrain-task-result') {
+    const task = e.data.task;
+    const status = e.data.status;
+    const nextStep = task === 'topp' ? 3 : 4;
+    const positionInfo = {
+      unity: { x: e.data.unityX, y: e.data.unityY, z: e.data.unityZ },
+      map: {
+        easting: 125427 - e.data.unityX,
+        northing: 6842734 - e.data.unityZ
+      }
+    };
+    finishTask(task, status, nextStep, positionInfo);
   }
 });
 
 function openFullscreen() {
   document.getElementById('terrain-fs').classList.add('active');
   const overlay = document.getElementById('terrain-task-overlay');
-  if (currentTask === 'topp' || currentTask === 'dal') {
-    overlay.classList.add('visible');
+  const mapSlot = document.getElementById('terrain-fs-mapslot');
+  if (currentTask === 'topp' || currentTask === 'dal' || currentTask === 'tutorial') {
+    if (currentTask === 'tutorial') {
+      overlay.classList.remove('visible');
+    } else {
+      overlay.classList.add('visible');
+    }
+    const mapEl = document.getElementById('map-' + currentTask);
+    let inst = null;
+    if (currentTask === 'topp') inst = toppMapInstance;
+    else if (currentTask === 'dal') inst = dalMapInstance;
+    else if (currentTask === 'tutorial') inst = tutorialMapInstance;
+    if (mapEl && mapSlot) {
+      mapSlot.appendChild(mapEl);
+      if (inst) setTimeout(() => inst.invalidateSize(), 50);
+    }
   } else {
     overlay.classList.remove('visible');
   }
   setTimeout(() => {
     const iframe = document.querySelector('#terrain-fs iframe');
     if (iframe) iframe.focus();
+    fixUnityCanvasSize();
   }, 300);
 }
-function closeFullscreen() { document.getElementById('terrain-fs').classList.remove('active'); }
+function closeFullscreen() {
+  document.getElementById('terrain-fs').classList.remove('active');
+  ['topp', 'dal', 'tutorial'].forEach(t => {
+    const mapEl = document.getElementById('map-' + t);
+    const slot = document.getElementById('map-' + t + '-slot');
+    if (mapEl && slot && mapEl.parentElement !== slot) {
+      slot.appendChild(mapEl);
+      let inst = null;
+      if (t === 'topp') inst = toppMapInstance;
+      else if (t === 'dal') inst = dalMapInstance;
+      else if (t === 'tutorial') inst = tutorialMapInstance;
+      if (inst) setTimeout(() => inst.invalidateSize(), 50);
+    }
+  });
+}
+
+function fixUnityCanvasSize() {
+  const iframe = document.getElementById('terrain-iframe');
+  try {
+    const doc = iframe.contentDocument;
+    const container = doc.querySelector('#unity-container');
+    const canvas = doc.querySelector('#unity-canvas');
+    if (container) {
+      container.style.width = '100%';
+      container.style.height = '100%';
+    }
+    if (canvas) {
+      canvas.style.width = '100%';
+      canvas.style.height = 'calc(100% - 50px)';
+    }
+    iframe.contentWindow.dispatchEvent(new Event('resize'));
+  } catch (e) {
+    console.warn('Kunne ikke justere Unity-canvas storrelse:', e);
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('terrain-fs').classList.contains('active')) {
+    fixUnityCanvasSize();
+  }
+});
+
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
 
 async function submitAll() {
