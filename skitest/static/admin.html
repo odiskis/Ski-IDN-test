@@ -139,9 +139,11 @@
         <div class="chart-card-header"><span class="chart-card-title">Sluttposisjoner på kart</span></div>
         <div id="map-recognition" style="width:100%;aspect-ratio:1/1;max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
         <div class="map-legend">
-          <span><span class="legend-dot" style="background:#1A3C5E;"></span> Mål + presisjonsgrenser (150/500/1000m)</span>
-          <span><span class="legend-dot" style="background:#2D7D46;"></span> Ferdig</span>
-          <span><span class="legend-dot" style="background:#C0392B;"></span> Gir opp</span>
+          <span><span class="legend-dot" style="background:#000000;"></span> Mål + presisjonsgrenser (150/500/1000m)</span>
+          <span><span class="legend-dot" style="background:#2D7D46;"></span> Punkt-1: Ferdig</span>
+          <span><span class="legend-dot" style="background:#FF8F1F;"></span> Punkt-1: Gir opp</span>
+          <span><span class="legend-dot" style="background:#265EF7;"></span> Punkt-2: Ferdig</span>
+          <span><span class="legend-dot" style="background:#BF26F7;"></span> Punkt-2: Gir opp</span>
         </div>
         <p class="chart-note">Hver prikk er en deltakers rapporterte sluttposisjon for Punkt-1 eller Punkt-2. Hold musepekeren over en prikk for deltaker-ID og avstand.</p>
       </div>
@@ -248,8 +250,11 @@ const RECOGNITION_TASKS = {
   topp: { label: 'Punkt-1', easting: 123209.04, northing: 6841950.12 },
   dal:  { label: 'Punkt-2', easting: 123657.62, northing: 6840969.33 }
 };
-const GOAL_COLOR = '#1A3C5E';
-const STATUS_COLORS = { finished: '#2D7D46', gaveup: '#C0392B' };
+const GOAL_COLOR = '#000000';
+const STATUS_COLORS = {
+  topp: { finished: '#2D7D46', gaveup: '#FF8F1F' },
+  dal:  { finished: '#265EF7', gaveup: '#BF26F7' }
+};
 
 function buildRecognitionMap(data) {
   const markers = [];
@@ -265,7 +270,7 @@ function buildRecognitionMap(data) {
       markers.push({
         easting: t.map_position.easting,
         northing: t.map_position.northing,
-        color: STATUS_COLORS[t.status],
+        color: STATUS_COLORS[taskKey][t.status],
         radius: 6,
         fillOpacity: 0.85,
         tooltip: `${d.pid} · ${goal.label} · ${t.status === 'finished' ? 'Ferdig' : 'Gir opp'}${typeof t.distance_m === 'number' ? ' · ' + Math.round(t.distance_m) + 'm' : ''}`

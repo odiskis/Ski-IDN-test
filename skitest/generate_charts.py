@@ -34,10 +34,12 @@ COLOR_TOPP = "#C0392B"
 COLOR_DAL = "#2563A8"
 COLOR_TOPP_LIGHT = "#E57368"
 COLOR_DAL_LIGHT = "#6FA8D6"
-COLOR_NAVY = "#1A3C5E"
+COLOR_NAVY = "#000000"
 COLOR_MUTED = "#64748B"
-COLOR_FINISHED = "#2D7D46"
-COLOR_GAVEUP = "#C0392B"
+COLOR_TOPP_FINISHED = "#2D7D46"
+COLOR_TOPP_GAVEUP = "#FF8F1F"
+COLOR_DAL_FINISHED = "#265EF7"
+COLOR_DAL_GAVEUP = "#BF26F7"
 
 TASK_TARGETS = {
     "topp": {"label": "Punkt-1", "easting": 123209.04, "northing": 6841950.12},
@@ -370,8 +372,12 @@ def chart_recognition_map(data, outdir, mapdir):
                     fontsize=9, fontweight="bold", color=COLOR_NAVY, zorder=5)
 
     # Participant end positions, colored by outcome
+    task_colors = {
+        "topp": {"finished": COLOR_TOPP_FINISHED, "gaveup": COLOR_TOPP_GAVEUP},
+        "dal":  {"finished": COLOR_DAL_FINISHED, "gaveup": COLOR_DAL_GAVEUP},
+    }
     for task in TASK_TARGETS:
-        for status, color in [("finished", COLOR_FINISHED), ("gaveup", COLOR_GAVEUP)]:
+        for status, color in task_colors[task].items():
             xs, ys = [], []
             for d in data:
                 t = d.get("tasks", {}).get(task, {})
@@ -392,8 +398,10 @@ def chart_recognition_map(data, outdir, mapdir):
     legend_handles = [
         plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_NAVY, markersize=10,
                    label="Mal + presisjonsgrenser (150/500/1000m)"),
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_FINISHED, markersize=8, label="Ferdig"),
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_GAVEUP, markersize=8, label="Gir opp"),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_TOPP_FINISHED, markersize=8, label="Punkt-1: Ferdig"),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_TOPP_GAVEUP, markersize=8, label="Punkt-1: Gir opp"),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_DAL_FINISHED, markersize=8, label="Punkt-2: Ferdig"),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_DAL_GAVEUP, markersize=8, label="Punkt-2: Gir opp"),
     ]
     ax.legend(handles=legend_handles, loc="lower left", fontsize=8, framealpha=0.9)
     ax.set_title("Sluttposisjoner pa kart")
