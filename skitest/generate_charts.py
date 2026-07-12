@@ -345,20 +345,28 @@ def chart_survey_likert(data, outdir):
 
 
 # ---------- Chart 12: Final positions on map ----------
-def chart_recognition_map(data, outdir, mapdir):
+TASK_COLORS = {
+    "topp": {"finished": COLOR_TOPP_FINISHED, "gaveup": COLOR_TOPP_GAVEUP},
+    "dal":  {"finished": COLOR_DAL_FINISHED, "gaveup": COLOR_DAL_GAVEUP},
+}
+
+
+def chart_recognition_map(data, outdir, mapdir, tasks=None, filename="12_sluttposisjoner_kart.png", title="Sluttposisjoner pa kart"):
+    tasks = tasks or list(TASK_TARGETS)
     fig, ax = plt.subplots(figsize=(8, 8))
     try:
         img, extent = load_map_background(mapdir)
     except (FileNotFoundError, KeyError, IndexError, json.JSONDecodeError):
         no_data_note(ax, "Fant ikke kartbakgrunn (sjekk --mapdir)")
-        ax.set_title("Sluttposisjoner pa kart")
-        savefig(fig, outdir, "12_sluttposisjoner_kart.png")
+        ax.set_title(title)
+        savefig(fig, outdir, filename)
         return
 
     ax.imshow(img, extent=extent, zorder=0)
 
     # Goal markers with precision rings
-    for goal in TASK_TARGETS.values():
+    for task in tasks:
+        goal = TASK_TARGETS[task]
         for r in PRECISION_RADII:
             ax.add_patch(plt.Circle(
                 (goal["easting"], goal["northing"]), r,
@@ -372,12 +380,8 @@ def chart_recognition_map(data, outdir, mapdir):
                     fontsize=9, fontweight="bold", color=COLOR_NAVY, zorder=5)
 
     # Participant end positions, colored by outcome
-    task_colors = {
-        "topp": {"finished": COLOR_TOPP_FINISHED, "gaveup": COLOR_TOPP_GAVEUP},
-        "dal":  {"finished": COLOR_DAL_FINISHED, "gaveup": COLOR_DAL_GAVEUP},
-    }
-    for task in TASK_TARGETS:
-        for status, color in task_colors[task].items():
+    for task in tasks:
+        for status, color in TASK_COLORS[task].items():
             xs, ys = [], []
             for d in data:
                 t = d.get("tasks", {}).get(task, {})
@@ -398,14 +402,16 @@ def chart_recognition_map(data, outdir, mapdir):
     legend_handles = [
         plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_NAVY, markersize=10,
                    label="Mal + presisjonsgrenser (150/500/1000m)"),
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_TOPP_FINISHED, markersize=8, label="Punkt-1: Ferdig"),
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_TOPP_GAVEUP, markersize=8, label="Punkt-1: Gir opp"),
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_DAL_FINISHED, markersize=8, label="Punkt-2: Ferdig"),
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_DAL_GAVEUP, markersize=8, label="Punkt-2: Gir opp"),
     ]
+    for task in tasks:
+        label = TASK_TARGETS[task]["label"]
+        legend_handles.append(plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=TASK_COLORS[task]["finished"],
+                                          markersize=8, label=f"{label}: Ferdig"))
+        legend_handles.append(plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=TASK_COLORS[task]["gaveup"],
+                                          markersize=8, label=f"{label}: Gir opp"))
     ax.legend(handles=legend_handles, loc="lower left", fontsize=8, framealpha=0.9)
-    ax.set_title("Sluttposisjoner pa kart")
-    savefig(fig, outdir, "12_sluttposisjoner_kart.png")
+    ax.set_title(title)
+    savefig(fig, outdir, filename)
 
 
 def main():
@@ -486,6 +492,12 @@ def main():
 
     chart_survey_likert(data, args.outdir)
     chart_recognition_map(data, args.outdir, args.mapdir)
+    chart_recognition_map(data, args.outdir, args.mapdir, tasks=["topp"],
+                           filename="12a_sluttposisjoner_kart_punkt1.png",
+                           title="Sluttposisjoner pa kart - Punkt-1")
+    chart_recognition_map(data, args.outdir, args.mapdir, tasks=["dal"],
+                           filename="12b_sluttposisjoner_kart_punkt2.png",
+                           title="Sluttposisjoner pa kart - Punkt-2")
 
     print("\nFerdig! Alle grafer ligger i:", os.path.abspath(args.outdir))
 

@@ -149,6 +149,29 @@
       </div>
     </div>
 
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Sluttposisjoner på kart – Punkt-1</span></div>
+        <div id="map-recognition-topp" style="width:100%;aspect-ratio:1/1;max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
+        <div class="map-legend">
+          <span><span class="legend-dot" style="background:#000000;"></span> Mål + presisjonsgrenser (150/500/1000m)</span>
+          <span><span class="legend-dot" style="background:#2D7D46;"></span> Punkt-1: Ferdig</span>
+          <span><span class="legend-dot" style="background:#FF8F1F;"></span> Punkt-1: Gir opp</span>
+        </div>
+        <p class="chart-note">Kun sluttposisjoner rapportert for Punkt-1.</p>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Sluttposisjoner på kart – Punkt-2</span></div>
+        <div id="map-recognition-dal" style="width:100%;aspect-ratio:1/1;max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
+        <div class="map-legend">
+          <span><span class="legend-dot" style="background:#000000;"></span> Mål + presisjonsgrenser (150/500/1000m)</span>
+          <span><span class="legend-dot" style="background:#265EF7;"></span> Punkt-2: Ferdig</span>
+          <span><span class="legend-dot" style="background:#BF26F7;"></span> Punkt-2: Gir opp</span>
+        </div>
+        <p class="chart-note">Kun sluttposisjoner rapportert for Punkt-2.</p>
+      </div>
+    </div>
+
     <div class="charts-tier-title">Oppgaveprestasjon</div>
     <div class="charts-grid">
       <div class="chart-card">
@@ -256,10 +279,11 @@ const STATUS_COLORS = {
   dal:  { finished: '#265EF7', gaveup: '#BF26F7' }
 };
 
-function buildRecognitionMap(data) {
+function buildRecognitionMap(data, containerId, taskKeys) {
   const markers = [];
   const circles = [];
-  Object.entries(RECOGNITION_TASKS).forEach(([taskKey, goal]) => {
+  taskKeys.forEach(taskKey => {
+    const goal = RECOGNITION_TASKS[taskKey];
     [150, 500, 1000].forEach(r => {
       circles.push({ easting: goal.easting, northing: goal.northing, radius: r, color: GOAL_COLOR });
     });
@@ -277,7 +301,7 @@ function buildRecognitionMap(data) {
       });
     });
   });
-  initTopoMap('map-recognition', MAPS_META_URL, MAPS_IMG_BASE, markers, circles);
+  initTopoMap(containerId, MAPS_META_URL, MAPS_IMG_BASE, markers, circles);
 }
 
 // ---------- Statistics helper functions ----------
@@ -400,7 +424,9 @@ function renderCharts(data) {
   }
   buildRecognitionRateChart(data);
   buildDistanceHistChart(data);
-  buildRecognitionMap(data);
+  buildRecognitionMap(data, 'map-recognition', Object.keys(RECOGNITION_TASKS));
+  buildRecognitionMap(data, 'map-recognition-topp', ['topp']);
+  buildRecognitionMap(data, 'map-recognition-dal', ['dal']);
   buildCompletionChart(data);
   buildTimeDistChart(data);
   buildToppVsDalChart(data);
