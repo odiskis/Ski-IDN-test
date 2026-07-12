@@ -11,10 +11,10 @@
 //     { label: 'Topp', easting: 123209.04, northing: 6841950.12, color: '#C0392B' }
 //   ]);
 
-function initTopoMap(containerId, metadataUrl, imageBaseUrl, markers) {
+function initTopoMap(containerId, metadataUrl, imageBaseUrl, markers, circles) {
   fetch(metadataUrl)
     .then(r => r.json())
-    .then(meta => buildTopoMap(containerId, meta, imageBaseUrl, markers || []))
+    .then(meta => buildTopoMap(containerId, meta, imageBaseUrl, markers || [], circles || []))
     .catch(err => {
       console.error('Kunne ikke laste kartmetadata:', err);
       const el = document.getElementById(containerId);
@@ -22,7 +22,7 @@ function initTopoMap(containerId, metadataUrl, imageBaseUrl, markers) {
     });
 }
 
-function buildTopoMap(containerId, meta, imageBaseUrl, markers) {
+function buildTopoMap(containerId, meta, imageBaseUrl, markers, circles) {
   // meta.levels is expected in overview -> most-zoomed order, matching
   // the output of generate_topo_maps.py (01_overview ... 04_zoom).
   const levels = meta.levels;
@@ -118,11 +118,11 @@ function buildTopoMap(containerId, meta, imageBaseUrl, markers) {
   markers.forEach(m => {
     if (m.easting == null || m.northing == null) return;
     const marker = L.circleMarker([m.northing, m.easting], {
-      radius: 8,
+      radius: m.radius || 8,
       color: 'white',
       weight: 3,
       fillColor: m.color || '#C0392B',
-      fillOpacity: 1,
+      fillOpacity: m.fillOpacity != null ? m.fillOpacity : 1,
     }).addTo(map);
     if (m.label) {
       marker.bindTooltip(m.label, {
@@ -132,6 +132,19 @@ function buildTopoMap(containerId, meta, imageBaseUrl, markers) {
         className: 'topomap-label',
       });
     }
+  });
+
+  // Circles — e.g. precision boundaries around a target. Radius in meters
+  // matches directly since CRS.Simple here uses raw UTM meter units.
+  (circles || []).forEach(c => {
+    if (c.easting == null || c.northing == null) return;
+    L.circle([c.northing, c.easting], {
+      radius: c.radius,
+      color: c.color || '#1A3C5E',
+      weight: c.weight || 1.5,
+      fill: false,
+      dashArray: c.dashArray || '5,5',
+    }).addTo(map);
   });
 
   return map;

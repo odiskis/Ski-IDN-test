@@ -56,7 +56,7 @@
   .fs-close { background:var(--yellow); border:none; color:var(--navy); padding:8px 20px; border-radius:8px; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:0.9rem; }
   .terrain-fs-body { display:flex; flex:1; flex-direction:row; overflow:hidden; padding:12px; gap:12px; box-sizing:border-box; }
   .terrain-fullscreen iframe { flex:1; border:none; height:100%; }
-  .terrain-fs-mapslot { width:40%; flex-shrink:0; background:#fff; border-left:2px solid var(--border); overflow:hidden; }
+.terrain-fs-mapslot { width:40%; flex-shrink:0; background:#fff; border-left:2px solid var(--border); overflow:hidden; isolation:isolate; }
   .terrain-fs-mapslot > div { width:100% !important; height:100% !important; aspect-ratio:unset !important; border-radius:0 !important; border:none !important; }
 
   .terrain-open-btn { width:100%; padding:26px 20px; border-radius:16px; border:none; background:var(--navy); cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; font-size:1.15rem; font-weight:700; color:white; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 4px 16px rgba(26,60,94,0.25); margin-top:20px; }
@@ -79,12 +79,14 @@
   .map-marker-start { position:absolute; width:16px; height:16px; border-radius:50%; background:var(--blue); border:3px solid white; box-shadow:0 0 0 2px var(--blue); transform:translate(-50%,-50%); }
   .map-marker-start-label { position:absolute; background:var(--blue); color:white; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:6px; transform:translate(-50%,-140%); white-space:nowrap; }
 
-  /* OVERLAY: tid + ferdig/gi opp, vist oppå terrengmodellen i fullskjerm */
-  .terrain-task-overlay { position:absolute; bottom:28px; left:75%; transform:translateX(-50%); z-index:20; background:rgba(26,60,94,0.92); border-radius:16px; padding:16px 20px; display:none; flex-direction:column; align-items:center; gap:12px; box-shadow:0 6px 24px rgba(0,0,0,0.3); min-width:320px; }
+  /* OVERLAY: time + finished/give up, shown over the terrain model in fullscreen */
+  .terrain-task-overlay { position:absolute; bottom:28px; left:75%; transform:translateX(-50%); z-index:1000; background:rgba(26,60,94,0.92); border-radius:16px; padding:16px 20px; display:none; flex-direction:column; align-items:center; gap:12px; box-shadow:0 6px 24px rgba(0,0,0,0.3); min-width:320px; }
   .terrain-task-overlay.visible { display:flex; }
   .terrain-task-overlay .overlay-timer { font-family:monospace; font-size:1.3rem; font-weight:700; color:white; }
   .terrain-task-overlay .overlay-btn-row { display:flex; gap:10px; width:100%; }
   .terrain-task-overlay .overlay-btn-row .btn { flex:1; justify-content:center; padding:12px 14px; }
+  .terrain-tutorial-overlay { position:absolute; bottom:28px; left:75%; transform:translateX(-50%); z-index:1000; display:none; }
+  .terrain-tutorial-overlay.visible { display:flex; }
 
   /* TASK TIMER + STATUS BUTTONS */
   .timer-display { font-family:monospace; font-size:1.4rem; font-weight:700; color:var(--navy); text-align:center; padding:12px; background:var(--card); border-radius:10px; margin:20px 0; border:1px solid var(--border); }
@@ -162,6 +164,9 @@
       <button class="btn btn-give-up" onclick="finishTaskFromOverlay('gaveup')">🏳 Jeg gir opp</button>
     </div>
   </div>
+  <div class="terrain-tutorial-overlay" id="terrain-tutorial-overlay">
+    <button class="btn btn-primary" onclick="closeFullscreen(); goStep(2);">Jeg er klar, gå videre →</button>
+  </div>
   <div class="terrain-fs-body">
     <iframe id="terrain-iframe" src="https://odinbo.folk.ntnu.no/spill-test-master_v2/" allowfullscreen></iframe>
     <div class="terrain-fs-mapslot" id="terrain-fs-mapslot"></div>
@@ -186,7 +191,7 @@
 <div class="container">
 
   <!-- STEP -1: CONSENT -->
-  <div class="step active" id="step-1">
+  <div class="step" id="step-1">
     <div class="card">
       <h1>Informasjonsskriv og samtykke</h1>
       <div style="margin-top:16px;font-size:0.92rem;line-height:1.7;color:var(--text);">
@@ -238,7 +243,7 @@
     </div>
   </div>
 
-  <!-- STEP 0: WELCOME + INNLEDENDE SPØRSMÅL -->
+  <!-- STEP 0: WELCOME + INTRODUCTORY QUESTIONS -->
   <div class="step" id="step0">
     <div class="welcome-hero">
       <h1>Velkommen til brukertest</h1>
@@ -286,7 +291,7 @@
     </div>
   </div>
 
-  <!-- STEP 1: INTRODUKSJON - BLI KJENT MED TERRENGMODELLEN (TUTORIAL) -->
+  <!-- STEP 1: INTRODUCTION - GET TO KNOW THE TERRAIN MODEL (TUTORIAL) -->
   <div class="step" id="step1">
     <div class="step-header">
       <div class="step-badge" style="background:var(--blue)">1</div>
@@ -324,7 +329,7 @@
     </div>
   </div>
 
-  <!-- STEP 2: OPPGAVE 1 - Gå til punkt 1 i terrengmodellen -->
+  <!-- STEP 2: TASK 1 - GO TO POINT 1 IN THE TERRAIN MODEL -->
   <div class="step" id="step2">
     <div class="step-header">
       <div class="step-badge" style="background:var(--accent)">2</div>
@@ -352,7 +357,7 @@
     </button>
   </div>
 
-  <!-- STEP 3: OPPGAVE 2 - Gå til punkt 2 i terrengmodellen -->
+  <!-- STEP 3: TASK 2 - GO TO POINT 2 IN THE TERRAIN MODEL -->
   <div class="step" id="step3">
     <div class="step-header">
       <div class="step-badge" style="background:var(--green)">3</div>
@@ -552,6 +557,12 @@
       <div class="pid-badge" id="done-pid"></div>
     </div>
   </div>
+  <div class="step" id="step-closed">
+  <div class="done-screen">
+    <div class="done-icon">🔒</div>
+    <h2>Brukertesten tar ikke lengre imot svar. Tusen takk for at du ville bidra!</h2>
+  </div>
+</div>
 
 </div>
 
@@ -566,8 +577,8 @@ let tutorialMapInstance = null;
 let toppMapInstance = null;
 let dalMapInstance = null;
 
-// taskData holder tid, status og avstand (placeholder) per oppgave.
-// distance_m er null helt til terrengmodellen (Unity) sender ekte data.
+// taskData stores time, status, and distance (placeholder) per task.
+// distance_m is null until the terrain model (Unity) sends real data.
 let taskData = {
   topp: { time_seconds: null, status: null, distance_m: null },
   dal:  { time_seconds: null, status: null, distance_m: null }
@@ -575,6 +586,22 @@ let taskData = {
 let taskStartTimes = {};
 let timerIntervals = {};
 let currentTask = null; // 'tutorial' | 'topp' | 'dal' | null
+
+async function checkStudyStatus() {
+  try {
+    const r = await fetch('/skitest/app.cgi/api/status');
+    const d = await r.json();
+    if (d.open === false) {
+      document.getElementById('step-1').classList.remove('active');
+      document.getElementById('step-closed').classList.add('active');
+    } else {
+      document.getElementById('step-1').classList.add('active');
+    }
+  } catch (e) {
+    document.getElementById('step-1').classList.add('active'); // fail open
+  }
+}
+checkStudyStatus();
 
 function submitConsent() {
   if (!document.getElementById('consent-check').checked) {
@@ -592,12 +619,17 @@ async function startTest() {
   if (!mapExp) { alert('Velg hvor ofte du bruker topografiske kart.'); return; }
   try {
     const r = await fetch('/skitest/app.cgi/api/start', {method:'POST'});
+    if (r.status === 403) {
+      document.getElementById('step0').classList.remove('active');
+      document.getElementById('step-closed').classList.add('active');
+      return;
+    }
     const d = await r.json();
     pid = d.pid;
   } catch(e) { pid = Math.random().toString(36).substring(2,10); }
   goStep(1);
 }
-// 
+
 function reloadTerrain() {
   const iframe = document.getElementById('terrain-iframe');
   const baseSrc = iframe.src.split('?')[0];
@@ -615,7 +647,7 @@ function goStep(n) {
   });
   window.scrollTo({top:0, behavior:'smooth'});
 
-// currentTask styrer hva som vises i overlegget inne i terrengmodellen
+// currentTask controls what is shown in the overlay inside the terrain model
   if (n === 1) {
     currentTask = 'tutorial';
     if (!tutorialMapInitialized) {
@@ -658,6 +690,11 @@ function startTaskTimer(taskKey) {
   }, 1000);
 }
 
+const TASK_TARGETS = {
+  topp: { easting: 123209.04, northing: 6841950.12 },
+  dal: { easting: 123657.62, northing: 6840969.33 }
+};
+
 function finishTask(taskKey, status, nextStep, positionInfo) {
   if (timerIntervals[taskKey]) clearInterval(timerIntervals[taskKey]);
   const start = taskStartTimes[taskKey] || Date.now();
@@ -665,6 +702,7 @@ function finishTask(taskKey, status, nextStep, positionInfo) {
   taskData[taskKey] = {
     time_seconds: elapsedSeconds,
     status: status,
+    distance_m: positionInfo ? positionInfo.distance_m : null,
     unity_position: positionInfo ? positionInfo.unity : null,
     map_position: positionInfo ? positionInfo.map : null
   };
@@ -672,9 +710,9 @@ function finishTask(taskKey, status, nextStep, positionInfo) {
   goStep(nextStep);
 }
 
-// Kalles fra "Ferdig"/"Jeg gir opp"-knappene. Ber Unity om spillerens
-// posisjon fremfor a avslutte oppgaven med en gang -- selve avslutningen
-// skjer i message-lytteren under, nar svaret kommer tilbake.
+// Called from the "Finished"/"Give up" buttons. Asks Unity for the player's
+// position before ending the task immediately; the actual completion happens
+// in the message listener below once the response comes back.
 function finishTaskFromOverlay(status) {
   if (currentTask !== 'topp' && currentTask !== 'dal') return;
   requestUnityPosition(currentTask, status);
@@ -695,12 +733,18 @@ window.addEventListener('message', (e) => {
     const task = e.data.task;
     const status = e.data.status;
     const nextStep = task === 'topp' ? 3 : 4;
+    const mapPos = {
+      easting: 125427 - e.data.unityX,
+      northing: 6842734 - e.data.unityZ
+    };
+    const target = TASK_TARGETS[task];
+    const distance_m = target
+      ? Math.sqrt(Math.pow(mapPos.easting - target.easting, 2) + Math.pow(mapPos.northing - target.northing, 2))
+      : null;
     const positionInfo = {
       unity: { x: e.data.unityX, y: e.data.unityY, z: e.data.unityZ },
-      map: {
-        easting: 125427 - e.data.unityX,
-        northing: 6842734 - e.data.unityZ
-      }
+      map: mapPos,
+      distance_m: distance_m
     };
     finishTask(task, status, nextStep, positionInfo);
   }
@@ -709,12 +753,15 @@ window.addEventListener('message', (e) => {
 function openFullscreen() {
   document.getElementById('terrain-fs').classList.add('active');
   const overlay = document.getElementById('terrain-task-overlay');
+  const tutorialOverlay = document.getElementById('terrain-tutorial-overlay');
   const mapSlot = document.getElementById('terrain-fs-mapslot');
   if (currentTask === 'topp' || currentTask === 'dal' || currentTask === 'tutorial') {
     if (currentTask === 'tutorial') {
       overlay.classList.remove('visible');
+      tutorialOverlay.classList.add('visible');
     } else {
       overlay.classList.add('visible');
+      tutorialOverlay.classList.remove('visible');
     }
     const mapEl = document.getElementById('map-' + currentTask);
     let inst = null;
@@ -727,6 +774,7 @@ function openFullscreen() {
     }
   } else {
     overlay.classList.remove('visible');
+    tutorialOverlay.classList.remove('visible');
   }
   setTimeout(() => {
     const iframe = document.querySelector('#terrain-fs iframe');
@@ -800,6 +848,11 @@ async function submitAll() {
 
   try {
     const r = await fetch('/skitest/app.cgi/api/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    if (r.status === 403) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-closed').classList.add('active');
+      return;
+    }
     if (!r.ok) throw new Error('Server svarte med feil: ' + r.status);
     const d = await r.json();
     document.getElementById('done-pid').textContent = 'Deltaker-ID: ' + (d.pid || pid || 'ukjent');

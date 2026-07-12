@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin · Brukertest Analyse</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 <style>
   :root {
@@ -80,6 +81,9 @@
   .chart-card canvas { max-height:280px; }
   .chart-note { font-size:0.78rem; color:var(--muted); margin-top:10px; line-height:1.5; }
   .chart-warning { background:#FEF3E2; border:1px solid var(--orange); border-radius:10px; padding:12px 16px; font-size:0.85rem; color:var(--text); margin-bottom:20px; }
+  .map-legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; font-size:0.8rem; color:var(--text); }
+  .map-legend span { display:flex; align-items:center; gap:6px; }
+  .legend-dot { width:12px; height:12px; border-radius:50%; display:inline-block; border:2px solid white; box-shadow:0 0 0 1px var(--border); }
   @media(max-width:800px) { .charts-grid { grid-template-columns:1fr; } }
 </style>
 </head>
@@ -96,6 +100,8 @@
       <p style="color:var(--muted);font-size:0.9rem;">Odin Bård Østvedt · Masteroppgave NTNU 2026</p>
     </div>
     <div class="toolbar">
+      <span id="study-status-badge" class="status-badge badge-none">Sjekker status...</span>
+      <button class="btn btn-outline" id="study-toggle-btn" onclick="toggleStudy()">⏳</button>
       <button class="btn btn-outline" onclick="exportCSV()">📥 Eksporter CSV</button>
     </div>
   </div>
@@ -119,12 +125,25 @@
       <div class="chart-card">
         <div class="chart-card-header"><span class="chart-card-title">Gjenkjenningsrate per terskel</span><button class="chart-dl-btn" onclick="downloadChart('chart-recognition-rate')">Last ned</button></div>
         <canvas id="chart-recognition-rate"></canvas>
-        <p class="chart-note">Andel deltakere som fullførte innenfor 25m (høy), 100m (moderat) og 250m (lav) presisjon, per oppgave.</p>
+        <p class="chart-note">Andel deltakere som fullførte innenfor 150m (høy), 500m (moderat) og 1000m (lav) presisjon, per oppgave.</p>
       </div>
       <div class="chart-card">
         <div class="chart-card-header"><span class="chart-card-title">Fordeling av sluttavstand</span><button class="chart-dl-btn" onclick="downloadChart('chart-distance-hist')">Last ned</button></div>
         <canvas id="chart-distance-hist"></canvas>
         <p class="chart-note">Viser om avstandene klumper seg rundt lave verdier (presis gjenkjenning) eller sprer seg jevnt (tilfeldig gjetting).</p>
+      </div>
+    </div>
+
+    <div class="charts-grid full">
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="chart-card-title">Sluttposisjoner på kart</span></div>
+        <div id="map-recognition" style="width:100%;aspect-ratio:1/1;max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
+        <div class="map-legend">
+          <span><span class="legend-dot" style="background:#1A3C5E;"></span> Mål + presisjonsgrenser (150/500/1000m)</span>
+          <span><span class="legend-dot" style="background:#2D7D46;"></span> Ferdig</span>
+          <span><span class="legend-dot" style="background:#C0392B;"></span> Gir opp</span>
+        </div>
+        <p class="chart-note">Hver prikk er en deltakers rapporterte sluttposisjon for Punkt-1 eller Punkt-2. Hold musepekeren over en prikk for deltaker-ID og avstand.</p>
       </div>
     </div>
 
@@ -206,6 +225,8 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/skitest/app.cgi/topomap.js"></script>
 <script>
 let pw = '', allData = [];
 const BASE = '/skitest/app.cgi';
@@ -220,9 +241,41 @@ if (typeof Chart !== 'undefined') {
   Chart.defaults.font.family = "'Times New Roman', 'Liberation Serif', serif";
   Chart.defaults.backgroundColor = 'transparent';
 }
-const THRESHOLDS = [ {label:'Høy (≤25m)', value:25}, {label:'Moderat (≤100m)', value:100}, {label:'Lav (≤250m)', value:250} ];
+const THRESHOLDS = [ {label:'Høy (≤150m)', value:150}, {label:'Moderat (≤500m)', value:500}, {label:'Lav (≤1000m)', value:1000} ];
+const MAPS_META_URL = '/skitest/app.cgi/maps/map_metadata.json';
+const MAPS_IMG_BASE = '/skitest/app.cgi/maps';
+const RECOGNITION_TASKS = {
+  topp: { label: 'Punkt-1', easting: 123209.04, northing: 6841950.12 },
+  dal:  { label: 'Punkt-2', easting: 123657.62, northing: 6840969.33 }
+};
+const GOAL_COLOR = '#1A3C5E';
+const STATUS_COLORS = { finished: '#2D7D46', gaveup: '#C0392B' };
 
-// ---------- Statistikk-hjelpefunksjoner ----------
+function buildRecognitionMap(data) {
+  const markers = [];
+  const circles = [];
+  Object.entries(RECOGNITION_TASKS).forEach(([taskKey, goal]) => {
+    [150, 500, 1000].forEach(r => {
+      circles.push({ easting: goal.easting, northing: goal.northing, radius: r, color: GOAL_COLOR });
+    });
+    markers.push({ easting: goal.easting, northing: goal.northing, color: GOAL_COLOR, radius: 10, label: goal.label });
+    data.forEach(d => {
+      const t = d.tasks?.[taskKey];
+      if (!t || !t.map_position || (t.status !== 'finished' && t.status !== 'gaveup')) return;
+      markers.push({
+        easting: t.map_position.easting,
+        northing: t.map_position.northing,
+        color: STATUS_COLORS[t.status],
+        radius: 6,
+        fillOpacity: 0.85,
+        tooltip: `${d.pid} · ${goal.label} · ${t.status === 'finished' ? 'Ferdig' : 'Gir opp'}${typeof t.distance_m === 'number' ? ' · ' + Math.round(t.distance_m) + 'm' : ''}`
+      });
+    });
+  });
+  initTopoMap('map-recognition', MAPS_META_URL, MAPS_IMG_BASE, markers, circles);
+}
+
+// ---------- Statistics helper functions ----------
 function mean(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
 function median(arr) {
   if (!arr.length) return null;
@@ -302,7 +355,34 @@ async function doLogin() {
     document.getElementById('main').style.display = 'block';
     document.getElementById('last-updated').textContent = 'Oppdatert: ' + new Date().toLocaleTimeString('no');
     render(allData);
+    refreshStudyStatus();
   } catch(e) { document.getElementById('login-err').textContent = 'Kunne ikke koble til.'; }
+}
+
+async function refreshStudyStatus() {
+  try {
+    const r = await fetch(BASE + '/api/status');
+    const d = await r.json();
+    const badge = document.getElementById('study-status-badge');
+    const btn = document.getElementById('study-toggle-btn');
+    if (d.open) {
+      badge.textContent = '🟢 Brukertesten er åpen';
+      badge.className = 'status-badge badge-finished';
+      btn.textContent = '🔒 Steng brukertesten';
+    } else {
+      badge.textContent = '🔴 Brukertesten er stengt';
+      badge.className = 'status-badge badge-gaveup';
+      btn.textContent = '🔓 Åpne brukertesten igjen';
+    }
+  } catch(e) {}
+}
+
+async function toggleStudy() {
+  try {
+    const r = await fetch(BASE + '/api/admin/toggle-study?pw=' + encodeURIComponent(pw), {method:'POST'});
+    if (!r.ok) { alert('Kunne ikke endre status.'); return; }
+    await refreshStudyStatus();
+  } catch(e) { alert('Feil ved endring av status.'); }
 }
 
 // ========== VISUALISERINGER ==========
@@ -315,6 +395,7 @@ function renderCharts(data) {
   }
   buildRecognitionRateChart(data);
   buildDistanceHistChart(data);
+  buildRecognitionMap(data);
   buildCompletionChart(data);
   buildTimeDistChart(data);
   buildToppVsDalChart(data);
@@ -539,8 +620,8 @@ function renderStats(data) {
   const n = data.length;
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">Deltakere totalt</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:${COLORS.topp}">${recognitionRate(data,'topp',100)}%</div><div class="stat-label">Gjenkjenningsrate Topp (≤100m)</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:${COLORS.dal}">${recognitionRate(data,'dal',100)}%</div><div class="stat-label">Gjenkjenningsrate Dal (≤100m)</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:${COLORS.topp}">${recognitionRate(data,'topp',150)}%</div><div class="stat-label">Gjenkjenningsrate Topp (≤150m)</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:${COLORS.dal}">${recognitionRate(data,'dal',150)}%</div><div class="stat-label">Gjenkjenningsrate Dal (≤150m)</div></div>
     <div class="stat-card"><div class="stat-num">${completionRate(data,'topp')}%</div><div class="stat-label">Fullført oppgave #1 Topp</div></div>
     <div class="stat-card"><div class="stat-num">${completionRate(data,'dal')}%</div><div class="stat-label">Fullført oppgave #2 Dal</div></div>
     <div class="stat-card"><div class="stat-num">${fmtTime(avgTaskTime(data,'topp'))} / ${fmtTime(avgTaskTime(data,'dal'))}</div><div class="stat-label">Snitt tid Topp / Dal</div></div>`;

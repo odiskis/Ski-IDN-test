@@ -1,6 +1,6 @@
 # Skitur Brukertest · NTNU 2026
 
-## Oppsett på NTNU-server
+## Setup on the NTNU server
 
 1. Last opp hele mappen til serveren din (f.eks. via SCP eller git)
 2. Installer avhengigheter:

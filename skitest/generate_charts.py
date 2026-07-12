@@ -2,19 +2,19 @@
 """
 generate_charts.py
 
-Genererer ferdige, publiseringsklare grafbilder (PNG) fra brukertestdataene,
-basert pa samme analyseplan som admin panelet. Ment til direkte bruk i
-masteroppgaven (sett inn bildene rett i Word/LaTeX).
+Generates publication-ready chart images (PNG) from the user study data,
+based on the same analysis plan as the admin panel. Intended for direct use
+in the master's thesis (insert images into Word/LaTeX).
 
-Bruk:
-    # Fra lokal fil (f.eks. lastet ned fra admin panelet eller kopiert fra
-    # data/responses.json pa serveren)
+Usage:
+    # From a local file (e.g. downloaded from the admin panel or copied from
+    # data/responses.json on the server)
     python3 generate_charts.py --file responses.json --outdir charts_output
 
-    # Direkte fra serveren (henter data via admin-API-et)
-    python3 generate_charts.py --url https://odinbo.folk.ntnu.no/skitest/app.cgi --pw DITT_PASSORD --outdir charts_output
+    # Directly from the server (fetches data via the admin API)
+    python3 generate_charts.py --url https://odinbo.folk.ntnu.no/skitest/app.cgi --pw YOUR_PASSWORD --outdir charts_output
 
-Krever: matplotlib, scipy, numpy (pip install matplotlib scipy numpy --break-system-packages)
+Requires: matplotlib, scipy, numpy (pip install matplotlib scipy numpy --break-system-packages)
 """
 
 import argparse
@@ -29,13 +29,21 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy import stats as scipy_stats
 
-# ---------- Utseende ----------
+# ---------- Appearance ----------
 COLOR_TOPP = "#C0392B"
 COLOR_DAL = "#2563A8"
 COLOR_TOPP_LIGHT = "#E57368"
 COLOR_DAL_LIGHT = "#6FA8D6"
 COLOR_NAVY = "#1A3C5E"
 COLOR_MUTED = "#64748B"
+COLOR_FINISHED = "#2D7D46"
+COLOR_GAVEUP = "#C0392B"
+
+TASK_TARGETS = {
+    "topp": {"label": "Punkt-1", "easting": 123209.04, "northing": 6841950.12},
+    "dal":  {"label": "Punkt-2", "easting": 123657.62, "northing": 6840969.33},
+}
+PRECISION_RADII = (150, 500, 1000)
 
 plt.rcParams.update({
     "font.family": "serif",
@@ -54,7 +62,7 @@ plt.rcParams.update({
     "savefig.dpi": 200,
 })
 
-THRESHOLDS = [("Hoy (<=25m)", 25), ("Moderat (<=100m)", 100), ("Lav (<=250m)", 250)]
+THRESHOLDS = [("Hoy (<=150m)", 150), ("Moderat (<=500m)", 500), ("Lav (<=1000m)", 1000)]
 
 SURVEY_LABELS = {
     "nav1": "Enkelt a bevege seg med taster/kontroller",
@@ -71,19 +79,19 @@ SURVEY_LABELS = {
 }
 
 
-# ---------- Datalasting ----------
+# ---------- Data loading ----------
 def load_data(args):
     if args.file:
         with open(args.file, encoding="utf-8") as f:
             return json.load(f)
     if args.url and args.pw:
-        url = args.url.rstrip("/") + "/api/admin/data?pw=" + urllib.parse_quote(args.pw)
+        url = args.url.rstrip("/") + "/api/admin/data?pw=" + urllib.parse.quote(args.pw)
         with urllib.request.urlopen(url) as resp:
             return json.loads(resp.read().decode("utf-8"))
     raise SystemExit("Du ma oppgi enten --file eller bade --url og --pw.")
 
 
-# ---------- Statistikk-hjelpefunksjoner ----------
+# ---------- Statistics helper functions ----------
 def distance_values(data, task):
     out = []
     for d in data:
@@ -161,7 +169,20 @@ def savefig(fig, outdir, name):
     print(f"  Lagret: {path}")
 
 
-# ---------- Chart 1: Gjenkjenningsrate ----------
+def load_map_background(mapdir):
+    """Loads the overview level (levels[0]) from map_metadata.json, the same
+    file topomap.js uses on the website -- this guarantees the background
+    image has the exact same UTM extent the participants actually saw."""
+    with open(os.path.join(mapdir, "map_metadata.json"), encoding="utf-8") as f:
+        meta = json.load(f)
+    overview = meta["levels"][0]
+    bbox = overview["bbox"]
+    extent = (bbox["xmin"], bbox["xmax"], bbox["ymin"], bbox["ymax"])
+    img = plt.imread(os.path.join(mapdir, f"{overview['label']}_base.png"))
+    return img, extent
+
+
+# ---------- Chart 1: Recognition rate ----------
 def chart_recognition_rate(data, outdir):
     fig, ax = plt.subplots(figsize=(7, 4.5))
     if not has_any_distance(data):
@@ -182,7 +203,7 @@ def chart_recognition_rate(data, outdir):
     savefig(fig, outdir, "01_gjenkjenningsrate.png")
 
 
-# ---------- Chart 2: Avstandsfordeling (histogram) ----------
+# ---------- Chart 2: Distance distribution (histogram) ----------
 def chart_distance_histogram(data, outdir):
     fig, ax = plt.subplots(figsize=(7, 4.5))
     topp_vals, dal_vals = distance_values(data, "topp"), distance_values(data, "dal")
@@ -199,7 +220,7 @@ def chart_distance_histogram(data, outdir):
     savefig(fig, outdir, "02_avstandsfordeling.png")
 
 
-# ---------- Chart 3: Fullfort vs gitt opp ----------
+# ---------- Chart 3: Completed vs. given up ----------
 def chart_completion(data, outdir):
     fig, ax = plt.subplots(figsize=(6, 4.5))
     tasks = ["topp", "dal"]
@@ -215,7 +236,7 @@ def chart_completion(data, outdir):
     savefig(fig, outdir, "03_fullfort_vs_gitt_opp.png")
 
 
-# ---------- Chart 4: Tidsbruk (boxplot) ----------
+# ---------- Chart 4: Time usage (boxplot) ----------
 def chart_time_distribution(data, outdir):
     fig, ax = plt.subplots(figsize=(6, 4.5))
     topp_t, dal_t = time_values(data, "topp"), time_values(data, "dal")
@@ -228,7 +249,7 @@ def chart_time_distribution(data, outdir):
     savefig(fig, outdir, "04_tidsbruk_boxplot.png")
 
 
-# ---------- Chart 5: Topp vs Dal, tre paneler ----------
+# ---------- Chart 5: Top vs Valley, three panels ----------
 def chart_topp_vs_dal(data, outdir):
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
     metrics = [
@@ -245,7 +266,7 @@ def chart_topp_vs_dal(data, outdir):
     savefig(fig, outdir, "05_topp_vs_dal.png")
 
 
-# ---------- Chart 6 og 7: Gruppesammenligninger ----------
+# ---------- Chart 6 and 7: Group comparisons ----------
 def chart_group_comparison(data, outdir, field, order, label_map, filename, title):
     fig, ax = plt.subplots(figsize=(7, 4.5))
     groups = group_by_field(data, field, order)
@@ -264,7 +285,7 @@ def chart_group_comparison(data, outdir, field, order, label_map, filename, titl
     savefig(fig, outdir, filename)
 
 
-# ---------- Chart 8-10: Korrelasjons-scatterplot ----------
+# ---------- Chart 8-10: Correlation scatterplots ----------
 def _scatter_points(data, x_extractor):
     xs_topp, ys_topp, xs_dal, ys_dal = [], [], [], []
     for d in data:
@@ -299,7 +320,7 @@ def chart_scatter(data, outdir, x_extractor, xlabel, filename, title):
     savefig(fig, outdir, filename)
 
 
-# ---------- Chart 11: Survey Likert-gjennomsnitt ----------
+# ---------- Chart 11: Survey Likert averages ----------
 def chart_survey_likert(data, outdir):
     fig, ax = plt.subplots(figsize=(8, 6))
     labels, means, errs = [], [], []
@@ -321,12 +342,71 @@ def chart_survey_likert(data, outdir):
     savefig(fig, outdir, "11_survey_likert.png")
 
 
+# ---------- Chart 12: Final positions on map ----------
+def chart_recognition_map(data, outdir, mapdir):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    try:
+        img, extent = load_map_background(mapdir)
+    except (FileNotFoundError, KeyError, IndexError, json.JSONDecodeError):
+        no_data_note(ax, "Fant ikke kartbakgrunn (sjekk --mapdir)")
+        ax.set_title("Sluttposisjoner pa kart")
+        savefig(fig, outdir, "12_sluttposisjoner_kart.png")
+        return
+
+    ax.imshow(img, extent=extent, zorder=0)
+
+    # Goal markers with precision rings
+    for goal in TASK_TARGETS.values():
+        for r in PRECISION_RADII:
+            ax.add_patch(plt.Circle(
+                (goal["easting"], goal["northing"]), r,
+                fill=False, edgecolor=COLOR_NAVY, linewidth=1.3,
+                linestyle=(0, (5, 5)), zorder=2,
+            ))
+        ax.scatter([goal["easting"]], [goal["northing"]], s=140, color=COLOR_NAVY,
+                   edgecolor="white", linewidth=1.5, zorder=4)
+        ax.annotate(goal["label"], (goal["easting"], goal["northing"]),
+                    textcoords="offset points", xytext=(0, 12), ha="center",
+                    fontsize=9, fontweight="bold", color=COLOR_NAVY, zorder=5)
+
+    # Participant end positions, colored by outcome
+    for task in TASK_TARGETS:
+        for status, color in [("finished", COLOR_FINISHED), ("gaveup", COLOR_GAVEUP)]:
+            xs, ys = [], []
+            for d in data:
+                t = d.get("tasks", {}).get(task, {})
+                pos = t.get("map_position")
+                if t.get("status") == status and pos:
+                    xs.append(pos["easting"]); ys.append(pos["northing"])
+            if xs:
+                ax.scatter(xs, ys, s=45, color=color, alpha=0.85,
+                           edgecolor="white", linewidth=0.8, zorder=3)
+
+    ax.set_xlim(extent[0], extent[1])
+    ax.set_ylim(extent[2], extent[3])
+    ax.set_aspect("equal")
+    ax.set_xticks([]); ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    legend_handles = [
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_NAVY, markersize=10,
+                   label="Mal + presisjonsgrenser (150/500/1000m)"),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_FINISHED, markersize=8, label="Ferdig"),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_GAVEUP, markersize=8, label="Gir opp"),
+    ]
+    ax.legend(handles=legend_handles, loc="lower left", fontsize=8, framealpha=0.9)
+    ax.set_title("Sluttposisjoner pa kart")
+    savefig(fig, outdir, "12_sluttposisjoner_kart.png")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generer grafbilder fra brukertestdata")
     parser.add_argument("--file", help="Sti til lokal responses.json")
     parser.add_argument("--url", help="Base-URL til appen, f.eks. https://odinbo.folk.ntnu.no/skitest/app.cgi")
     parser.add_argument("--pw", help="Admin-passord (brukes sammen med --url)")
     parser.add_argument("--outdir", default="charts_output", help="Mappe grafene lagres i")
+    parser.add_argument("--mapdir", default="static/maps", help="Mappe med map_metadata.json og kart-PNG-ene (for sluttposisjonskartet)")
     args = parser.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)
@@ -364,10 +444,10 @@ def main():
                   "09_believability_vs_avstand.png", "Believability vs. sluttavstand")
 
     def time_extractor_factory():
-        # Denne brukes ikke direkte, tid-vs-avstand handteres separat under
+        # This is not used directly; time-vs-distance is handled separately below.
         pass
 
-    # Tid vs avstand (egen handtering siden x-verdien er per-oppgave, ikke global per deltaker)
+    # Time vs. distance (handled separately because the x-value is per task, not global per participant)
     fig, ax = plt.subplots(figsize=(7, 4.5))
     xs_topp = [d["tasks"]["topp"]["time_seconds"] for d in data
                if isinstance(d.get("tasks", {}).get("topp", {}).get("distance_m"), (int, float))
@@ -397,6 +477,7 @@ def main():
     savefig(fig, args.outdir, "10_tid_vs_avstand.png")
 
     chart_survey_likert(data, args.outdir)
+    chart_recognition_map(data, args.outdir, args.mapdir)
 
     print("\nFerdig! Alle grafer ligger i:", os.path.abspath(args.outdir))
 

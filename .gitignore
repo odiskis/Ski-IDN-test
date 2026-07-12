@@ -1,0 +1,4 @@
+skitest/charts_output/
+skitest/data/
+skitest/__pycache__/
+Thumbs.db
