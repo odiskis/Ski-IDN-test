@@ -131,6 +131,12 @@ function buildTopoMap(containerId, meta, imageBaseUrl, markers, circles) {
         offset: [0, -10],
         className: 'topomap-label',
       });
+    } else if (m.tooltip) {
+      marker.bindTooltip(m.tooltip, {
+        permanent: false,
+        direction: 'top',
+        offset: [0, -10],
+      });
     }
   });
 
