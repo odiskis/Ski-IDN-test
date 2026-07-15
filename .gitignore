@@ -1,4 +1,7 @@
 skitest/charts_output/
+skitest/charts_output_*/
 skitest/data/
 skitest/__pycache__/
+analysis/__pycache__/
+analysis/*.png
 Thumbs.db

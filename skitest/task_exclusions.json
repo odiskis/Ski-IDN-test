@@ -1,0 +1,78 @@
+{
+  "generated": "2026-07-13",
+  "description": "Task- and participant-level exclusions due to a confirmed position-logging fault (final position/distance defaults to spawn coordinates instead of the participant's actual location). All fields (time_seconds, status, distance_m, unity_position, map_position) are nulled for excluded tasks, for consistent N across all comparisons.",
+  "task_exclusions": [
+    {
+      "pid": "89ded716",
+      "task": "topp",
+      "reason": "dist_to_spawn=0.02m on finished status (105s); distance_m=3418.24 duplicates 48b07fa9/topp exactly",
+      "nulled_fields": ["time_seconds", "status", "distance_m", "unity_position", "map_position"],
+      "original_values": {
+        "time_seconds": 105,
+        "status": "finished",
+        "distance_m": 3418.2350748121044,
+        "unity_position": {"x": 1060.0174560546875, "y": 395.2511901855469, "z": 4000.01123046875}
+      }
+    },
+    {
+      "pid": "2f200e0c",
+      "task": "dal",
+      "reason": "dist_to_spawn=0.02m on gaveup status (15s); distance_m=2345.19628930852 exact duplicate of 48b07fa9/dal",
+      "nulled_fields": ["time_seconds", "status", "distance_m", "unity_position", "map_position"],
+      "original_values": {
+        "time_seconds": 15,
+        "status": "gaveup",
+        "distance_m": 2345.19628930852,
+        "unity_position": {"x": 1060.0174560546875, "y": 395.251220703125, "z": 4000.01123046875}
+      }
+    },
+    {
+      "pid": "ce72be5f",
+      "task": "dal",
+      "reason": "dist_to_spawn=1.5m on gaveup status (24s); participant explicitly reported task 2 not resetting to the intended start point",
+      "nulled_fields": ["time_seconds", "status", "distance_m", "unity_position", "map_position"],
+      "original_values": {
+        "time_seconds": 24,
+        "status": "gaveup",
+        "distance_m": 2346.65958220273,
+        "unity_position": {"x": 1059.18115234375, "y": 395.57672119140625, "z": 4001.281005859375}
+      }
+    },
+    {
+      "pid": "a8f5a15e",
+      "task": "topp",
+      "reason": "no position ever received; participant reported the model failed to start for task 1",
+      "nulled_fields": ["time_seconds", "status", "distance_m", "unity_position", "map_position"],
+      "original_values": {
+        "time_seconds": 74,
+        "status": "gaveup",
+        "distance_m": null,
+        "unity_position": null
+      }
+    },
+    {
+      "pid": "2ff4999a",
+      "task": "topp",
+      "reason": "no position ever received (same fault pattern as a8f5a15e/topp)",
+      "nulled_fields": ["time_seconds", "status", "distance_m", "unity_position", "map_position"],
+      "original_values": {
+        "time_seconds": 165,
+        "status": "gaveup",
+        "distance_m": null,
+        "unity_position": null
+      }
+    }
+  ],
+  "participant_exclusions": [
+    {
+      "pid": "48b07fa9",
+      "reason": "position bug on both tasks (topp finished at spawn, dal gaveup at spawn)",
+      "date_removed": "2026-07-13T14:20",
+      "removed_via": "admin panel (already applied)",
+      "original_values": {
+        "topp": {"time_seconds": 24, "status": "finished", "distance_m": 3418.2350748121044},
+        "dal": {"time_seconds": 9, "status": "gaveup", "distance_m": 2345.19628930852}
+      }
+    }
+  ]
+}
