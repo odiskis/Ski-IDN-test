@@ -125,7 +125,7 @@
       <div class="chart-card">
         <div class="chart-card-header"><span class="chart-card-title">Recognition rate per threshold</span><button class="chart-dl-btn" onclick="downloadChart('chart-recognition-rate')">Download</button></div>
         <canvas id="chart-recognition-rate"></canvas>
-        <p class="chart-note">Share of participants who finished within 150m (high), 500m (moderate) and 1000m (low) precision, per task.</p>
+        <p class="chart-note">Share of participants who finished within 73m (high), 231m (moderate) and 517m (low) precision, per task.</p>
       </div>
       <div class="chart-card">
         <div class="chart-card-header"><span class="chart-card-title">Distribution of final distance</span><button class="chart-dl-btn" onclick="downloadChart('chart-distance-hist')">Download</button></div>
@@ -139,7 +139,7 @@
         <div class="chart-card-header"><span class="chart-card-title">Final positions on map</span></div>
         <div id="map-recognition" style="width:100%;aspect-ratio:1/1;max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
         <div class="map-legend">
-          <span><span class="legend-dot" style="background:#000000;"></span> Goal + precision limits (150/500/1000m)</span>
+          <span><span class="legend-dot" style="background:#000000;"></span> Goal + precision limits (73/231/517m)</span>
           <span><span class="legend-dot" style="background:#2D7D46;"></span> Point 1: Finished</span>
           <span><span class="legend-dot" style="background:#FF8F1F;"></span> Point 1: Gave up</span>
           <span><span class="legend-dot" style="background:#265EF7;"></span> Point 2: Finished</span>
@@ -154,7 +154,7 @@
         <div class="chart-card-header"><span class="chart-card-title">Final positions on map – Point 1</span></div>
         <div id="map-recognition-topp" style="width:100%;aspect-ratio:1/1;max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
         <div class="map-legend">
-          <span><span class="legend-dot" style="background:#000000;"></span> Goal + precision limits (150/500/1000m)</span>
+          <span><span class="legend-dot" style="background:#000000;"></span> Goal + precision limits (73/231/517m)</span>
           <span><span class="legend-dot" style="background:#2D7D46;"></span> Point 1: Finished</span>
           <span><span class="legend-dot" style="background:#FF8F1F;"></span> Point 1: Gave up</span>
         </div>
@@ -164,7 +164,7 @@
         <div class="chart-card-header"><span class="chart-card-title">Final positions on map – Point 2</span></div>
         <div id="map-recognition-dal" style="width:100%;aspect-ratio:1/1;max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--border);"></div>
         <div class="map-legend">
-          <span><span class="legend-dot" style="background:#000000;"></span> Goal + precision limits (150/500/1000m)</span>
+          <span><span class="legend-dot" style="background:#000000;"></span> Goal + precision limits (73/231/517m)</span>
           <span><span class="legend-dot" style="background:#265EF7;"></span> Point 2: Finished</span>
           <span><span class="legend-dot" style="background:#BF26F7;"></span> Point 2: Gave up</span>
         </div>
@@ -266,7 +266,7 @@ if (typeof Chart !== 'undefined') {
   Chart.defaults.font.family = "'Times New Roman', 'Liberation Serif', serif";
   Chart.defaults.backgroundColor = 'transparent';
 }
-const THRESHOLDS = [ {label:'High (≤150m)', value:150}, {label:'Moderate (≤500m)', value:500}, {label:'Low (≤1000m)', value:1000} ];
+const THRESHOLDS = [ {label:'High (≤73m)', value:73}, {label:'Moderate (≤231m)', value:231}, {label:'Low (≤517m)', value:517} ];
 const MAPS_META_URL = '/skitest/app.cgi/maps/map_metadata.json';
 const MAPS_IMG_BASE = '/skitest/app.cgi/maps';
 const RECOGNITION_TASKS = {
@@ -284,7 +284,7 @@ function buildRecognitionMap(data, containerId, taskKeys) {
   const circles = [];
   taskKeys.forEach(taskKey => {
     const goal = RECOGNITION_TASKS[taskKey];
-    [150, 500, 1000].forEach(r => {
+    [73, 231, 517].forEach(r => {
       circles.push({ easting: goal.easting, northing: goal.northing, radius: r, color: GOAL_COLOR });
     });
     markers.push({ easting: goal.easting, northing: goal.northing, color: GOAL_COLOR, radius: 10, label: goal.label });
@@ -652,8 +652,8 @@ function renderStats(data) {
   const n = data.length;
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">Total participants</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:${COLORS.topp}">${recognitionRate(data,'topp',150)}%</div><div class="stat-label">Recognition rate Summit (≤150m)</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:${COLORS.dal}">${recognitionRate(data,'dal',150)}%</div><div class="stat-label">Recognition rate Valley (≤150m)</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:${COLORS.topp}">${recognitionRate(data,'topp',73)}%</div><div class="stat-label">Recognition rate Summit (≤73m)</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:${COLORS.dal}">${recognitionRate(data,'dal',73)}%</div><div class="stat-label">Recognition rate Valley (≤73m)</div></div>
     <div class="stat-card"><div class="stat-num">${completionRate(data,'topp')}%</div><div class="stat-label">Completed task #1 Summit</div></div>
     <div class="stat-card"><div class="stat-num">${completionRate(data,'dal')}%</div><div class="stat-label">Completed task #2 Valley</div></div>
     <div class="stat-card"><div class="stat-num">${fmtTime(avgTaskTime(data,'topp'))} / ${fmtTime(avgTaskTime(data,'dal'))}</div><div class="stat-label">Mean time Summit / Valley</div></div>`;

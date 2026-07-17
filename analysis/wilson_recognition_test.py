@@ -20,8 +20,8 @@ plain `py` / `python3` install.
 
 Usage:
     py wilson_recognition_test.py responses_cleaned_2026-07-13.json
-    py wilson_recognition_test.py responses.json --radius 150
-    py wilson_recognition_test.py responses.json --radius 500 --terrain-size 4097 --confidence 0.95
+    py wilson_recognition_test.py responses.json --radius 231
+    py wilson_recognition_test.py responses.json --radius 517 --terrain-size 4097 --confidence 0.95
 """
 
 import argparse
@@ -117,8 +117,8 @@ def main():
                     "rate vs. chance, computed from a responses JSON file."
     )
     parser.add_argument("json_path", help="Path to a responses JSON file (raw or cleaned).")
-    parser.add_argument("--radius", type=float, default=500.0,
-                         help="Recognition threshold radius in metres (default: 500).")
+    parser.add_argument("--radius", type=float, default=517.0,
+                         help="Recognition threshold radius in metres (default: 517).")
     parser.add_argument("--terrain-size", type=float, default=4097.0,
                          help="Terrain side length in metres, square terrain assumed "
                               "(default: 4097).")

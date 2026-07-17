@@ -45,7 +45,7 @@ TASK_TARGETS = {
     "topp": {"label": "Point 1", "easting": 123209.04, "northing": 6841950.12},
     "dal":  {"label": "Point 2", "easting": 123657.62, "northing": 6840969.33},
 }
-PRECISION_RADII = (150, 500, 1000)
+PRECISION_RADII = (73, 231, 517)
 
 plt.rcParams.update({
     "font.family": "serif",
@@ -64,7 +64,7 @@ plt.rcParams.update({
     "savefig.dpi": 200,
 })
 
-THRESHOLDS = [("High (<=150m)", 150), ("Moderate (<=500m)", 500), ("Low (<=1000m)", 1000)]
+THRESHOLDS = [("High (<=73m)", 73), ("Moderate (<=231m)", 231), ("Low (<=517m)", 517)]
 
 SURVEY_LABELS = {
     "nav1": "Easy to move around with keys/controls",
@@ -98,7 +98,7 @@ def distance_values(data, task):
     out = []
     for d in data:
         t = d.get("tasks", {}).get(task, {})
-        if t.get("status") == "finished" and isinstance(t.get("distance_m"), (int, float)):
+        if t.get("status") is not None and isinstance(t.get("distance_m"), (int, float)):
             out.append(t["distance_m"])
     return out
 
@@ -126,8 +126,7 @@ def recognition_rate(data, task, threshold):
         return 0.0
     within = [
         d for d in attempted
-        if d["tasks"][task]["status"] == "finished"
-        and isinstance(d["tasks"][task].get("distance_m"), (int, float))
+        if isinstance(d["tasks"][task].get("distance_m"), (int, float))
         and d["tasks"][task]["distance_m"] <= threshold
     ]
     return 100.0 * len(within) / len(attempted)
@@ -401,7 +400,7 @@ def chart_recognition_map(data, outdir, mapdir, tasks=None, filename="12_sluttpo
 
     legend_handles = [
         plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_NAVY, markersize=10,
-                   label="Goal + precision limits (150/500/1000m)"),
+                   label="Goal + precision limits (73/231/517m)"),
     ]
     for task in tasks:
         label = TASK_TARGETS[task]["label"]
